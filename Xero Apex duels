@@ -2632,7 +2632,7 @@ local COLORS = {
 
 local Config = {
     ForwardSpeed = 58.4,
-    ReturnSpeed  = 28,
+    ReturnSpeed  = 29.5,
 }
 
 local POSITION_L1     = Vector3.new(-476.48, -6.28,  92.73)
