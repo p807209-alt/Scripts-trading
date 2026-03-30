@@ -44,7 +44,7 @@ local function startLoop()
     task.spawn(function()
         while isActive do
             sendMessage()
-            task.wait(0.3)
+            task.wait(0.5)
         end
     end)
 end
