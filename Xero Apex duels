@@ -1461,6 +1461,174 @@ toggleBtn.MouseButton1Up:Connect(function()
     TweenService:Create(toggleBtn, TweenInfo.new(0.15), {Size = UDim2.new(0,55,0,55)}):Play()
 end)
 
+--// LOCK TARGET GUI SYSTEM
+
+LOCK_RADIUS = 70
+local LOCK_SPEED = 50
+
+local lockGui
+local lockHbConn
+local lockLv, lockAtt, lockGyro
+local lockEnabled = false
+
+local function getNearest()
+	local char = lp.Character
+	if not char then return nil end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return nil end
+
+	local nearest = nil
+	local nearestDist = LOCK_RADIUS
+
+	for _,plr in ipairs(Players:GetPlayers()) do
+		if plr ~= lp then
+			local pc = plr.Character
+			local phrp = pc and pc:FindFirstChild("HumanoidRootPart")
+			if phrp then
+				local d = (phrp.Position - hrp.Position).Magnitude
+				if d <= nearestDist then
+					nearest = plr
+					nearestDist = d
+				end
+			end
+		end
+	end
+
+	return nearest
+end
+
+local function getBat()
+	for _,t in ipairs(lp.Backpack:GetChildren()) do
+		if t:IsA("Tool") and string.find(string.lower(t.Name),"bat",1,true) then
+			return t
+		end
+	end
+
+	local char = lp.Character
+	if char then
+		for _,t in ipairs(char:GetChildren()) do
+			if t:IsA("Tool") and string.find(string.lower(t.Name),"bat",1,true) then
+				return t
+			end
+		end
+	end
+
+	return nil
+end
+
+local function startLock()
+	local char = lp.Character
+	if not char then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	lockAtt = Instance.new("Attachment", hrp)
+
+	lockLv = Instance.new("LinearVelocity", hrp)
+	lockLv.Attachment0 = lockAtt
+	lockLv.MaxForce = 50000
+	lockLv.RelativeTo = Enum.ActuatorRelativeTo.World
+	lockLv.Enabled = false
+
+	lockGyro = Instance.new("AlignOrientation", hrp)
+	lockGyro.Attachment0 = lockAtt
+	lockGyro.MaxTorque = 50000
+	lockGyro.Responsiveness = 120
+	lockGyro.Enabled = false
+
+	lockHbConn = RunService.Heartbeat:Connect(function()
+		local targetPlayer = getNearest()
+		if not targetPlayer then
+			lockLv.Enabled = false
+			lockGyro.Enabled = false
+			return
+		end
+
+		local tChar = targetPlayer.Character
+		local tHrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
+		if not tHrp then
+			lockLv.Enabled = false
+			lockGyro.Enabled = false
+			return
+		end
+
+		lockLv.Enabled = true
+		lockGyro.Enabled = true
+
+		local frontPos = tHrp.Position + tHrp.CFrame.LookVector * 2.2
+		local dir = frontPos - hrp.Position
+
+		if dir.Magnitude > 0.5 then
+			lockLv.VectorVelocity = dir.Unit * LOCK_SPEED
+		else
+			lockLv.VectorVelocity = Vector3.zero
+		end
+
+		lockGyro.CFrame = CFrame.lookAt(hrp.Position, frontPos)
+
+		local bat = getBat()
+		if bat then
+			if bat.Parent ~= char then
+				char.Humanoid:EquipTool(bat)
+			end
+			bat:Activate()
+		end
+	end)
+end
+
+local function stopLock()
+	if lockHbConn then lockHbConn:Disconnect() lockHbConn = nil end
+	if lockLv then lockLv:Destroy() lockLv = nil end
+	if lockGyro then lockGyro:Destroy() lockGyro = nil end
+	if lockAtt then lockAtt:Destroy() lockAtt = nil end
+end
+
+function createLockGui()
+	if lockGui then return end
+
+	lockGui = Instance.new("ScreenGui")
+	lockGui.Name = "KawatanBatTarget"
+	lockGui.Parent = lp.PlayerGui
+
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0,140,0,50)
+	btn.Position = UDim2.new(0.5,-70,0.75,0)
+	btn.Text = "LOCK"
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 18
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.BackgroundColor3 = Color3.fromRGB(0,120,255)
+	btn.Parent = lockGui
+
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,16)
+
+	btn.Active = true
+	btn.Draggable = true
+
+	btn.MouseButton1Click:Connect(function()
+		lockEnabled = not lockEnabled
+
+		if lockEnabled then
+			btn.Text = "LOCKED"
+			btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+			startLock()
+		else
+			btn.Text = "LOCK"
+			btn.BackgroundColor3 = Color3.fromRGB(0,120,255)
+			stopLock()
+		end
+	end)
+end
+
+function destroyLockGui()
+	lockEnabled = false
+	stopLock()
+	if lockGui then
+		lockGui:Destroy()
+		lockGui = nil
+	end
+end
+
 --////////////////////////////////////////////////////
 -- HUB PANEL - DISEÑO SOLICITADO
 --////////////////////////////////////////////////////
@@ -1977,7 +2145,7 @@ elseif text == "Auto Walk" then
     end)
 end
 
-local combatFuncs = {"Melee Aimbot","Auto Steal Nearest","Auto Medusa","Auto Bat","Anti Sentry"}
+local combatFuncs = {"Melee Aimbot","Lock Target","Auto Medusa","Auto Bat","Anti Sentry"}
 for _,f in ipairs(combatFuncs) do CreateToggle("Combat",f) end
 
 local playerFuncs = {"Speed Customizer","No Walk Animation","Anti Ragdoll","Spin Body","Slow Fall","Infinite Jump"}
