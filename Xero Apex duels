@@ -2262,21 +2262,26 @@ ShowSection("Combat")
 -- OPEN / CLOSE HUB
 local opened = false
 toggleBtn.MouseButton1Click:Connect(function()
-    opened = not opened
-    if opened then
-        TweenService:Create(hub, TweenInfo.new(0.3), {Position = UDim2.new(0,20,0.5,-HUB_HEIGHT/2)}):Play()
-    else
-        TweenService:Create(hub, TweenInfo.new(0.3), {Position = UDim2.new(0,-350,0.5,-HUB_HEIGHT/2)}):Play()
-    end
+opened = not opened
+if opened then
+TweenService:Create(hub, TweenInfo.new(0.3), {Position = UDim2.new(0,20,0.5,-HUB_HEIGHT/2)}):Play()
+else
+TweenService:Create(hub, TweenInfo.new(0.3), {Position = UDim2.new(0,-350,0.5,-HUB_HEIGHT/2)}):Play()
+end
 end)
 
 -- =========================
 -- 💬 DISCORD TEXTO (GRANDE SIN FONDO)
 -- =========================
 
-local discordLabel = Instance.new("TextLabel", gui)
+local player = game:GetService("Players").LocalPlayer
+local gui = player:WaitForChild("PlayerGui")
+
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Parent = gui
 discordLabel.Size = UDim2.new(0, 420, 0, 50)
-discordLabel.Position = UDim2.new(0.5, -210, 0.5, -25)
+discordLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+discordLabel.AnchorPoint = Vector2.new(0.5, 0.5)
 
 discordLabel.BackgroundTransparency = 1 -- 🔥 sin fondo
 
@@ -2291,16 +2296,16 @@ discordLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 
 -- ✨ efecto glow suave
 task.spawn(function()
-	while true do
-		for i = 0.1, 0.4, 0.02 do
-			discordLabel.TextTransparency = i
-			task.wait(0.04)
-		end
-		for i = 0.4, 0.1, -0.02 do
-			discordLabel.TextTransparency = i
-			task.wait(0.04)
-		end
-	end
+while true do
+for i = 0.1, 0.4, 0.02 do
+discordLabel.TextTransparency = i
+task.wait(0.04)
+end
+for i = 0.4, 0.1, -0.02 do
+discordLabel.TextTransparency = i
+task.wait(0.04)
+end
+end
 end)
 end)
 
