@@ -2631,7 +2631,7 @@ local COLORS = {
 }
 
 local Config = {
-    ForwardSpeed = 57.4,
+    ForwardSpeed = 58.4,
     ReturnSpeed  = 28,
 }
 
