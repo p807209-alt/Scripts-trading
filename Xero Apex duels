@@ -1505,7 +1505,7 @@ Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0, 6)
 
 -- Funcionalidad copiar Discord
 discordBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://discord.gg/tu-enlace-aqui")
+    setclipboard("discord.gg/dupYF5A9Vx")
     discordBtn.Text = "Copiado!"
     discordBtn.BackgroundColor3 = COLORS.StatusGreen
     task.wait(1)
@@ -2407,7 +2407,7 @@ Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 Shadow.Parent = sg
 
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.new(0, 235, 0, 180)
+Main.Size = UDim2.new(0, 210, 0, 180)
 Main.Position = UDim2.new(0.5, -125, 0.5, -90)
 Main.BackgroundColor3 = COLORS.Background
 Main.BackgroundTransparency = 0.1
