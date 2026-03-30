@@ -2407,7 +2407,7 @@ Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 Shadow.Parent = sg
 
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.new(0, 210, 0, 180)
+Main.Size = UDim2.new(0, 200, 0, 160)
 Main.Position = UDim2.new(0.5, -125, 0.5, -90)
 Main.BackgroundColor3 = COLORS.Background
 Main.BackgroundTransparency = 0.1
