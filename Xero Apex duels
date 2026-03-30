@@ -8,13 +8,14 @@ local player = Players.LocalPlayer
 -- GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false -- 🔥 evita que se borre al respawn
 
 -- BOTÓN
 local btn = Instance.new("TextButton")
 btn.Parent = screenGui
 btn.Size = UDim2.new(0, 100, 0, 35)
 btn.Position = UDim2.new(0, 70, 0, 130)
-btn.Text = "SEND"
+btn.Text = "TAUNT"
 btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 btn.Font = Enum.Font.GothamBold
@@ -22,13 +23,44 @@ btn.TextSize = 14
 
 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
 
--- CLICK → ENVIAR MENSAJE (CHAT MODERNO)
-btn.MouseButton1Click:Connect(function()
+-- ESTADO
+local isActive = false
+
+-- POSICIÓN ORIGINAL
+local originalPosition = btn.Position
+
+-- FUNCIÓN PARA ENVIAR MENSAJE
+local function sendMessage()
     local channels = TextChatService:WaitForChild("TextChannels")
     local channel = channels:FindFirstChild("RBXGeneral")
 
     if channel then
         channel:SendAsync("/Xero Apex hub")
+    end
+end
+
+-- LOOP AUTOMÁTICO
+local function startLoop()
+    task.spawn(function()
+        while isActive do
+            sendMessage()
+            task.wait(0.3)
+        end
+    end)
+end
+
+-- CLICK → TOGGLE
+btn.MouseButton1Click:Connect(function()
+    isActive = not isActive
+
+    if isActive then
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        btn.Position = UDim2.new(originalPosition.X.Scale, originalPosition.X.Offset, originalPosition.Y.Scale, originalPosition.Y.Offset - 5)
+
+        startLoop()
+    else
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        btn.Position = originalPosition
     end
 end)
 end)
