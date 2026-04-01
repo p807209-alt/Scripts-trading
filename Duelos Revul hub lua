@@ -1,46 +1,23 @@
--- 🔑 KEY ÚNICA
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- 🔑 KEY CORRECTA
 local CORRECT_KEY = "1234"
 
--- 👥 USERIDS permitidos
-local WhitelistedUsers = {
+-- 👥 WHITELIST
+local WHITELIST = {
     [12345678] = true,
     [87654321] = true,
 }
 
-local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
+-- 🔑 KEY DEL USUARIO (desde executor)
+local userKey = getgenv().key
 
-local player = Players.LocalPlayer
-local userKey = getgenv().key or ""
-
--- 🔔 Notificación
-local function notify(title, text)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = 3
-        })
-    end)
-end
-
--- 🔐 Validar key
-if userKey ~= CORRECT_KEY then
-    notify("Error", "Key incorrecta")
-    warn("❌ Key incorrecta")
+-- ❌ VALIDACIÓN (un solo mensaje)
+if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
+    player:Kick("Key requerida / No autorizado")
     return
 end
 
--- 👤 Validar usuario
-if not WhitelistedUsers[player.UserId] then
-    notify("Error", "Usuario no autorizado")
-    warn("❌ Usuario no autorizado")
-    return
-end
-
--- ✅ Acceso permitido
-notify("Success", "Acceso concedido")
-print("✅ Acceso concedido")
-
--- 🔽 Cargar HUB 🔽
-loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/hub.lua"))()
+-- ✅ ACCESO → HUB
+loadstring(game:HttpGet("TU_LINK_AQUI"))()
