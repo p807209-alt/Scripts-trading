@@ -15,7 +15,7 @@ local userKey = getgenv().key
 
 -- ❌ VALIDACIÓN
 if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
-    player:Kick("Revul Hub🌌\n\nKey requerida /o No se encontro registro en el HWID")
+    player:Kick("Revul Hub\n\nKey requerida /o No se encontro registro en el HWID")
     return
 end
 
