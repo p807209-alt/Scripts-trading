@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 -- 🔑 KEY CORRECTA
-local CORRECT_KEY = "1234"
+local CORRECT_KEY = ""
 
 -- 👥 WHITELIST
 local WHITELIST = {
@@ -15,7 +15,7 @@ local userKey = getgenv().key
 
 -- ❌ VALIDACIÓN (un solo mensaje)
 if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
-    player:Kick("Key requerida / No autorizado")
+    player:Kick("Key requerida❌ /Aceso restringido / No se encontro registro en el HWID")
     return
 end
 
