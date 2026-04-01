@@ -15,7 +15,7 @@ local userKey = getgenv().key
 
 -- ❌ VALIDACIÓN (un solo mensaje)
 if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
-    player:Kick("Key requerida❌ /Aceso restringido / No se encontro registro en el HWID")
+    player:Kick("Key requerida /o No se encontro registro en el HWID")
     return
 end
 
