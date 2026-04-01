@@ -1,17 +1,46 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+-- 🔑 KEY ÚNICA
+local CORRECT_KEY = "1234"
 
--- Lista de UserIds permitidos
-local WHITELIST = {
+-- 👥 USERIDS permitidos
+local WhitelistedUsers = {
     [12345678] = true,
     [87654321] = true,
-    [11223344] = true,
 }
 
-if not WHITELIST[player.UserId] then
-    player:Kick("No autorizado")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local player = Players.LocalPlayer
+local userKey = getgenv().key or ""
+
+-- 🔔 Notificación
+local function notify(title, text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = 3
+        })
+    end)
+end
+
+-- 🔐 Validar key
+if userKey ~= CORRECT_KEY then
+    notify("Error", "Key incorrecta")
+    warn("❌ Key incorrecta")
     return
 end
 
--- Ejecuta tu script si está permitido
-loadstring(game:HttpGet("TU_LINK_AQUI"))()
+-- 👤 Validar usuario
+if not WhitelistedUsers[player.UserId] then
+    notify("Error", "Usuario no autorizado")
+    warn("❌ Usuario no autorizado")
+    return
+end
+
+-- ✅ Acceso permitido
+notify("Success", "Acceso concedido")
+print("✅ Acceso concedido")
+
+-- 🔽 Cargar HUB 🔽
+loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/hub.lua"))()
