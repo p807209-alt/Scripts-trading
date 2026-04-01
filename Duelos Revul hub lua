@@ -1,38 +1,17 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local CORRECT_KEY = "1234"
+-- Lista de UserIds permitidos
+local WHITELIST = {
+    [12345678] = true,
+    [87654321] = true,
+    [11223344] = true,
+}
 
--- GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+if not WHITELIST[player.UserId] then
+    player:Kick("No autorizado")
+    return
+end
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 150)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -75)
-Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-Frame.Parent = ScreenGui
-
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(0, 200, 0, 40)
-TextBox.Position = UDim2.new(0.5, -100, 0, 30)
-TextBox.PlaceholderText = "Enter Key"
-TextBox.Parent = Frame
-
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0, 200, 0, 40)
-Button.Position = UDim2.new(0.5, -100, 0, 80)
-Button.Text = "Submit"
-Button.Parent = Frame
-
--- Acción al presionar
-Button.MouseButton1Click:Connect(function()
-    if TextBox.Text == CORRECT_KEY then
-        ScreenGui:Destroy()
-
-        -- Aquí ejecutas tu hub real
-        loadstring(game:HttpGet("TU_LINK_AQUI"))()
-    else
-        player:Kick("Key incorrecta")
-    end
-end)
+-- Ejecuta tu script si está permitido
+loadstring(game:HttpGet("TU_LINK_AQUI"))()
