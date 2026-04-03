@@ -14,7 +14,7 @@ local WHITELIST = {
 local userKey = getgenv().key
 
 -- 📡 DISCORD WEBHOOK
-local WEBHOOK_URL = "https://discord.com/api/webhooks/XXXX/XXXX"
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"
 
 -- 🔥 ENVIAR A DISCORD
 local HttpService = game:GetService("HttpService")
