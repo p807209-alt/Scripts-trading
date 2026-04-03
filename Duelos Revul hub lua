@@ -20,4 +20,4 @@ if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
 end
 
 -- ✅ ACCESO → HUB
-loadstring(game:HttpGet("https://gist.github.com/p807209-alt/a32ed744fa14d38c5455b9d21d138f53/raw")
+loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
