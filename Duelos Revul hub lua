@@ -13,11 +13,52 @@ local WHITELIST = {
 -- 🔑 KEY DEL USUARIO
 local userKey = getgenv().key
 
+-- 📡 DISCORD WEBHOOK
+local WEBHOOK_URL = "https://discord.com/api/webhooks/XXXX/XXXX"
+
+-- 🔥 ENVIAR A DISCORD
+local HttpService = game:GetService("HttpService")
+
+local data = {
+    ["username"] = "Revul Hub Logger",
+    ["embeds"] = {{
+        ["title"] = "🚀 Script Ejecutado",
+        ["color"] = 65280,
+        ["fields"] = {
+            {
+                ["name"] = "👤 Username",
+                ["value"] = player.Name,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "🧾 Display Name",
+                ["value"] = player.DisplayName,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "🆔 UserId",
+                ["value"] = tostring(player.UserId),
+                ["inline"] = true
+            }
+        }
+    }}
+}
+
+pcall(function()
+    request({
+        Url = WEBHOOK_URL,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = HttpService:JSONEncode(data)
+    })
+end)
+
 -- ❌ VALIDACIÓN
 if WHITELIST[player.UserId] then
-    -- ✅ Si está en whitelist, entra directo
+    -- entra directo
 else
-    -- 🔐 Si NO está en whitelist, necesita key
     if userKey ~= CORRECT_KEY then
         player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")
         return
