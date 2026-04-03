@@ -14,9 +14,14 @@ local WHITELIST = {
 local userKey = getgenv().key
 
 -- ❌ VALIDACIÓN
-if not WHITELIST[player.UserId] or userKey ~= CORRECT_KEY then
-    player:Kick("Revul Hub\n\nKey requerida /o no se encontró registro en el HWID")
-    return
+if WHITELIST[player.UserId] then
+    -- ✅ Si está en whitelist, entra directo
+else
+    -- 🔐 Si NO está en whitelist, necesita key
+    if userKey ~= CORRECT_KEY then
+        player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")
+        return
+    end
 end
 
 -- ✅ ACCESO → HUB
