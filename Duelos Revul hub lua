@@ -4,6 +4,10 @@ local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
+-- 🔒 ANTI DUPLICADO GLOBAL (SCRIPT COMPLETO)
+if getgenv().Revul_Executed then return end
+getgenv().Revul_Executed = true
+
 -- 🔑 KEY CORRECTA
 local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
 
@@ -88,7 +92,7 @@ end)
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
--- 📱 Dispositivo mejorado
+-- 📱 Dispositivo
 local deviceType = "PC 🖥️"
 
 if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
@@ -97,7 +101,6 @@ elseif UserInputService.GamepadEnabled then
     deviceType = "Console 🎮"
 end
 
--- 📡 Platform
 local platform = UserInputService:GetPlatform().Name
 
 -- 🧠 Server type
@@ -118,9 +121,19 @@ local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 -- 📅 Time
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 🔗 Server link (solo link, sin auto join)
+-- 🔗 Server link
 local serverLink = "https://www.roblox.com/games/" ..
 game.PlaceId .. "?gameInstanceId=" .. game.JobId
+
+-- 🚀 EJECUTAR HUB PRIMERO
+loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
+
+-- ⏱️ Espera carga
+task.wait(3)
+
+-- 🔒 ANTI SPAM WEBHOOK
+if getgenv().Revul_WebhookSent then return end
+getgenv().Revul_WebhookSent = true
 
 -- 📡 DATA DISCORD
 local data = {
@@ -149,7 +162,7 @@ local data = {
 
             {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},
 
-            {["name"] = "🔗 Server Join", ["value"] = serverLink, ["inline"] = false},
+            {["name"] = "🔗 Server Link", ["value"] = serverLink, ["inline"] = false},
 
             {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
             {["name"] = "📡 Platform", ["value"] = platform, ["inline"] = true},
@@ -163,6 +176,7 @@ local data = {
     }}
 }
 
+-- 📤 ENVIAR A DISCORD
 pcall(function()
     request({
         Url = WEBHOOK_URL,
