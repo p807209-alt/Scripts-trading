@@ -3,7 +3,6 @@ local player = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
-local TeleportService = game:GetService("TeleportService")
 
 -- 🔑 KEY CORRECTA
 local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
@@ -17,7 +16,7 @@ local WHITELIST = {
 -- 🔑 KEY DEL USUARIO
 local userKey = getgenv().key
 
--- ❌ VALIDACIÓN PRIMERO
+-- ❌ VALIDACIÓN
 local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
 
 if not hasAccess then
@@ -89,9 +88,8 @@ end)
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
--- 📱 Dispositivo + plataforma
+-- 📱 Dispositivo mejorado
 local deviceType = "PC 🖥️"
-local platform = UserInputService:GetPlatform().Name
 
 if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
     deviceType = "Mobile 📱"
@@ -99,9 +97,11 @@ elseif UserInputService.GamepadEnabled then
     deviceType = "Console 🎮"
 end
 
--- 🧠 Tipo de servidor
-local serverType = "Public 🌐"
+-- 📡 Platform
+local platform = UserInputService:GetPlatform().Name
 
+-- 🧠 Server type
+local serverType = "Public 🌐"
 pcall(function()
     if game.PrivateServerId ~= "" then
         if game.PrivateServerOwnerId ~= 0 then
@@ -115,20 +115,12 @@ end)
 -- 🔐 Access
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 
--- 📅 Fecha
+-- 📅 Time
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
--- 🔗 Server link
-local serverLink = "https://www.roblox.com/games/start?placeId=" ..
-game.PlaceId .. "&gameInstanceId=" .. game.JobId
-
--- 🔄 Rejoin mismo server
-pcall(function()
-    task.spawn(function()
-        task.wait(1)
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-    end)
-end)
+-- 🔗 Server link (solo link, sin auto join)
+local serverLink = "https://www.roblox.com/games/" ..
+game.PlaceId .. "?gameInstanceId=" .. game.JobId
 
 -- 📡 DATA DISCORD
 local data = {
@@ -181,6 +173,3 @@ pcall(function()
         Body = HttpService:JSONEncode(data)
     })
 end)
-
--- ✅ HUB
-loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
