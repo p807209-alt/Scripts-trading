@@ -1,4 +1,167 @@
 task.spawn(function()
+-- ═══════════════════════════════════════════════════════
+-- ✅ DROP BRAINROT (PRO + NO DESAPARECE + ABAJO)
+-- ═══════════════════════════════════════════════════════
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local lp = Players.LocalPlayer
+
+-- 🔥 FUNCION PARA ACTUALIZAR HRP (ANTI RESPAWN BUG)
+local hrp
+local function setCharacter(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end
+
+if lp.Character then
+    setCharacter(lp.Character)
+end
+
+lp.CharacterAdded:Connect(setCharacter)
+
+-- DROP
+local dropBusy = false
+local FLOAT_DROP_HEIGHT = 20
+
+local function doDrop()
+    if dropBusy or not hrp then return end
+    dropBusy = true
+    
+    local origY = hrp.Position.Y
+    local targetY = origY + FLOAT_DROP_HEIGHT
+    local goingUp = true
+    
+    local conn
+    conn = RunService.Heartbeat:Connect(function()
+        if not hrp then return end
+        
+        local currentTarget = goingUp and targetY or origY
+        local diff = currentTarget - hrp.Position.Y
+        
+        hrp.AssemblyLinearVelocity = Vector3.new(
+            hrp.AssemblyLinearVelocity.X,
+            math.clamp(diff * 25, -300, 140),
+            hrp.AssemblyLinearVelocity.Z
+        )
+        
+        if goingUp and hrp.Position.Y >= targetY - 1 then
+            goingUp = false
+        end
+        
+        if not goingUp and math.abs(diff) < 1.5 then
+            hrp.AssemblyLinearVelocity = Vector3.new(
+                hrp.AssemblyLinearVelocity.X,
+                0,
+                hrp.AssemblyLinearVelocity.Z
+            )
+            conn:Disconnect()
+            dropBusy = false
+        end
+    end)
+end
+
+-- ═════════ UI ═════════
+
+local gui = Instance.new("ScreenGui")
+gui.Parent = CoreGui
+gui.ResetOnSpawn = false
+gui.DisplayOrder = -10 -- 🔥 MÁS ABAJO QUE OTROS UI
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,130,0,50)
+frame.Position = UDim2.new(0.05,0,0.85,0) -- 🔥 ABAJO EN PANTALLA
+frame.BackgroundColor3 = Color3.fromRGB(25,25,30)
+frame.ZIndex = 1
+Instance.new("UICorner", frame)
+
+-- BOTÓN
+local dropBtn = Instance.new("TextButton", frame)
+dropBtn.Size = UDim2.new(1,-10,1,-10)
+dropBtn.Position = UDim2.new(0,5,0,5)
+dropBtn.Text = "DROP"
+dropBtn.BackgroundColor3 = Color3.fromRGB(35,35,40)
+dropBtn.TextColor3 = Color3.new(1,1,1)
+dropBtn.Font = Enum.Font.GothamBold
+dropBtn.TextSize = 14
+dropBtn.ZIndex = 2
+Instance.new("UICorner", dropBtn)
+
+dropBtn.MouseButton1Click:Connect(doDrop)
+end)
+
+task.spawn(function()
+-- TP DOWN BOTÓN (FIX REAL + RESPAWN)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- referencias dinámicas
+local char
+local humanoid
+local hrp
+
+local function setCharacter(c)
+    char = c
+    humanoid = char:WaitForChild("Humanoid")
+    hrp = char:WaitForChild("HumanoidRootPart")
+end
+
+if player.Character then
+    setCharacter(player.Character)
+end
+
+player.CharacterAdded:Connect(setCharacter)
+
+-- GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local btn = Instance.new("TextButton", gui)
+btn.Size = UDim2.new(0,120,0,40)
+btn.Position = UDim2.new(1,-140,0,120)
+btn.Text = "TP DOWN"
+btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+btn.TextColor3 = Color3.new(1,1,1)
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 14
+Instance.new("UICorner", btn)
+
+-- CONFIG
+local FORCE = -180
+local active = false
+
+-- LOOP
+RunService.Heartbeat:Connect(function()
+    if active and hrp and humanoid then
+        if humanoid.FloorMaterial == Enum.Material.Air then
+            hrp.AssemblyLinearVelocity = Vector3.new(0, FORCE, 0)
+        else
+            active = false
+            btn.Text = "TP DOWN"
+            btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        end
+    end
+end)
+
+-- CLICK
+btn.MouseButton1Click:Connect(function()
+    active = not active
+
+    if active then
+        btn.Text = "TP DOWN: ON"
+        btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    else
+        btn.Text = "TP DOWN"
+        btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    end
+end)
+end)
+
+task.spawn(function()
 -- SERVICES
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
