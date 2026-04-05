@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 -- 🔑 KEY CORRECTA
 local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
@@ -22,7 +23,7 @@ local userKey = getgenv().key
 
 -- 🚫 BLOQUEO PRIMERO
 if BLACKLIST[player.UserId] then
-    player:Kick("Xero Apex hub\n\nAcceso denegado (Blacklisted)")
+    player:Kick("Xero Apex Hub\n\nAcceso denegado (Blacklisted)")
     return
 end
 
@@ -30,7 +31,7 @@ end
 local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
 
 if not hasAccess then
-    player:Kick("Xero Apex hub\n\nKey requerida o no se encontró registro en el HWID")    
+    player:Kick("Xero Apex hub\n\nKey requerida o no se encontró registro en el HWID")   
     return
 end
 
@@ -50,6 +51,15 @@ local executorName = identifyexecutor and identifyexecutor() or "Unknown"
 local playersCount = #Players:GetPlayers()
 local maxPlayers = Players.MaxPlayers
 
+-- 🎮 NOMBRE DEL JUEGO
+local gameName = "Unknown Game"
+pcall(function()
+    local info = MarketplaceService:GetProductInfo(game.PlaceId)
+    if info and info.Name then
+        gameName = info.Name
+    end
+end)
+
 -- 📅 FECHA
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
 
@@ -64,6 +74,8 @@ local data = {
             {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
             {["name"] = "🧾 Display", ["value"] = player.DisplayName, ["inline"] = true},
             {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},
+
+            {["name"] = "🎮 Game", ["value"] = gameName, ["inline"] = false},
 
             {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},
 
