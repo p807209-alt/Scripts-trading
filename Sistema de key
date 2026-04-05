@@ -1,0 +1,92 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+
+-- 🔑 KEY CORRECTA
+local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
+
+-- 👥 WHITELIST
+local WHITELIST = {
+    [12345678] = true,
+    [87654321] = true,
+}
+
+-- 🚫 BLACKLIST
+local BLACKLIST = {
+    [11111111] = true,
+    [22222222] = true,
+}
+
+-- 🔑 KEY DEL USUARIO
+local userKey = getgenv().key
+
+-- 🚫 BLOQUEO PRIMERO
+if BLACKLIST[player.UserId] then
+    player:Kick("Xero Apex Hub\n\nAcceso denegado (Blacklisted)")
+    return
+end
+
+-- ❌ VALIDACIÓN
+local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
+
+if not hasAccess then
+    player:Kick("Xero Apex Hub\n\nKey requerida o inválida")
+    return
+end
+
+-- 🧠 ANTI SPAM
+if getgenv().XeroApexLogged then
+    return
+end
+getgenv().XeroApexLogged = true
+
+-- 📡 WEBHOOK
+local WEBHOOK_URL = "TU_WEBHOOK_AQUI"
+
+-- 🖥️ EXECUTOR
+local executorName = identifyexecutor and identifyexecutor() or "Unknown"
+
+-- 👥 PLAYERS
+local playersCount = #Players:GetPlayers()
+local maxPlayers = Players.MaxPlayers
+
+-- 📅 FECHA
+local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
+
+-- 📡 DATA
+local data = {
+    ["username"] = "Xero Apex Logger",
+    ["embeds"] = {{
+        ["title"] = "🚀 Script Ejecutado",
+        ["color"] = 65280,
+        ["fields"] = {
+
+            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
+            {["name"] = "🧾 Display", ["value"] = player.DisplayName, ["inline"] = true},
+            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},
+
+            {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},
+
+            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
+            {["name"] = "🔐 Access", ["value"] = WHITELIST[player.UserId] and "Whitelist" or "Key", ["inline"] = true},
+
+            {["name"] = "⏱️ Fecha", ["value"] = timeStamp, ["inline"] = false},
+
+        }
+    }}
+}
+
+-- 📤 ENVIAR
+pcall(function()
+    request({
+        Url = WEBHOOK_URL,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = HttpService:JSONEncode(data)
+    })
+end)
+
+-- 🔥 LOAD HUB
+loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Xero%20Apex%20C%C3%B3digo%20completo"))()
