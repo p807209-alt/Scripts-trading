@@ -13,22 +13,34 @@ local WHITELIST = {
     [87654321] = true,  
 }  
 
+-- 🚫 BLACKLIST (NUEVO)
+local BLACKLIST = {
+    [11111111] = true, -- ejemplo
+    [22222222] = true, -- ejemplo
+}
+
 -- 🔑 KEY DEL USUARIO  
 local userKey = getgenv().key  
+
+-- ❌ BLOQUEO PRIMERO (PRIORIDAD)
+if BLACKLIST[player.UserId] then
+    player:Kick("Xero Apex hub\n\nAcceso denegado (Blacklisted)")
+    return
+end
 
 -- ❌ VALIDACIÓN  
 local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)  
 
 if not hasAccess then  
-    player:Kick("Revul Hub\n\nKey requerida o no se encontró registro en el HWID")  
+    player:Kick("Xero Apex hub\n\nKey requerida o no se encontró registro en el HWID")  
     return  
 end  
 
 -- 🧠 ANTI SPAM (solo una ejecución)
-if getgenv().RevulLogged then
+if getgenv().XeroApexLogged then
     return
 end
-getgenv().RevulLogged = true
+getgenv().XeroApexLogged = true
 
 -- 📡 WEBHOOK  
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"  
@@ -122,7 +134,7 @@ local accessType = WHITELIST[player.UserId] and "Whitelist" or "Key"
 -- 📅 TIME  
 local timeStamp = os.date("%Y-%m-%d %H:%M:%S")  
 
--- 🔗 SERVER LINK (solo compartir)
+-- 🔗 SERVER LINK  
 local serverLink = "https://www.roblox.com/games/" .. game.PlaceId .. "?privateServerLinkCode=" .. game.JobId  
 
 -- 📡 DATA  
