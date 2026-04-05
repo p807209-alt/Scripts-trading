@@ -10,7 +10,7 @@ local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
 -- 👥 WHITELIST  
 local WHITELIST = {  
     [9390110264] = true,  
-    [9497821880] = true,  
+    [949782188] = true,  
 }  
 
 -- 🚫 BLACKLIST (NUEVO)
