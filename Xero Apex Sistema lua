@@ -175,4 +175,4 @@ pcall(function()
 end)  
 
 -- 🔥 HUB LOAD  
-loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/5f43c5a7d6b0a78eaf931dadba1c1d1f.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Xero%20Apex%20C%C3%B3digo%20completo"))()
