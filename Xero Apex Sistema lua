@@ -9,7 +9,7 @@ local CORRECT_KEY = "A3FCFB7ECC9B6D0A"
 
 -- 👥 WHITELIST  
 local WHITELIST = {  
-    [9390110264] = true,  
+    [939011026] = true,  
     [9497821880] = true,  
 }  
 
