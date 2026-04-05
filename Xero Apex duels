@@ -1,2 +1,1 @@
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Xero%20Apex%20C%C3%B3digo%20completo"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Sistema%20de%20key"))()
