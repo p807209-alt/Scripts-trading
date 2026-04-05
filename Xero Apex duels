@@ -76,7 +76,7 @@ text.Size = UDim2.new(0, 300, 0, 18)
 text.Position = UDim2.new(0.5, -150, 0.35, 0)
 
 text.BackgroundTransparency = 1
-text.Text = "discord.gg/dupYF5A9Vx"
+text.Text = "discord.gg/NEBGUyKa49"
 text.TextScaled = true
 text.Font = Enum.Font.GothamBold
 text.TextColor3 = Color3.fromRGB(255, 255, 255)
