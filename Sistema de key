@@ -11,7 +11,7 @@ local WHITELIST = {
     [9497821880] = false,
     [1580638982] = false,
     [10780244223] = false,
-    [10024672051] = false,
+    [10024672051] = true,
 }
 
 -- 🚫 BLACKLIST
