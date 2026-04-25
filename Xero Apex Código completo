@@ -89,8 +89,8 @@ stroke.Transparency = 0
 end)
 
 task.spawn(function()
--- ⏳ ESPERAR 14 SEGUNDOS
-task.wait(14)
+-- ⏳ ESPERAR 17 SEGUNDOS
+task.wait(17)
 
 -- 💀 NO DUPLICAR GUI
 pcall(function()
