@@ -1,172 +1,144 @@
+-- [[ XERO APEX - COMBO HUB (NOVA + ICE) ]]
+
+-- 🔥 1. SISTEMA DE RE-SKIN Y COLORES (PARA NOVA)
 task.spawn(function()
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
 
--- 🔥 CONFIGURACIÓN
-local NOMBRE_NUEVO = "Xero Apex hub"
-local DISCORD_TUYO = "discord.gg/GfbPeZrzhN"
+    local NOMBRE_NUEVO = "Xero Apex hub"
+    local DISCORD_TUYO = "discord.gg/GfbPeZrzhN"
 
--- 🎨 TU PALETA (PRO BLACK)
-local COLORS = {
-    Background = Color3.fromRGB(12, 12, 15),
-    ButtonDark = Color3.fromRGB(25, 25, 30),
-    AccentBlue = Color3.fromRGB(0, 140, 255),
-    TextWhite = Color3.fromRGB(240, 240, 240)
-}
+    local COLORS = {
+        Background = Color3.fromRGB(12, 12, 15),
+        ButtonDark = Color3.fromRGB(25, 25, 30),
+        AccentBlue = Color3.fromRGB(0, 140, 255),
+        TextWhite = Color3.fromRGB(240, 240, 240)
+    }
 
--- 🛠️ FUNCIÓN DE BLOQUEO (CON PROTECCIÓN TOTAL AL CHAT)
-local function lockStyle(v)
-    -- 🚨 ESCUDO MAESTRO: Si es del CHAT o de ROBLOX, NO TOCAR NADA.
-    -- Buscamos cualquier rastro de que sea parte del sistema de mensajes.
-    if v:FindFirstAncestor("Chat") or 
-       v:FindFirstAncestor("RobloxGui") or 
-       v:FindFirstAncestor("ExperienceChat") or 
-       v:FindFirstAncestor("MarcaXero") or
-       v.Name:find("Message") or 
-       v.Name:find("Chat") then
-        return 
-    end
+    local function lockStyle(v)
+        if v:FindFirstAncestor("RobloxGui") or v:FindFirstAncestor("Chat") or v:FindFirstAncestor("MarcaXero") then
+            return 
+        end
 
-    local function apply()
-        pcall(function()
-            -- 1. CONTROL DE TEXTOS (SOLO EN EL MENÚ)
-            if v:IsA("TextLabel") or v:IsA("TextButton") then
-                local t = v.Text or ""
-                
-                -- Cambiar nombre del Hub (Solo si NO es el chat)
-                if (t:find("Nova") or t:find("hub")) and not t:find("Xero") then
-                    local fpsPing = t:match("|.*") or ""
-                    v.Text = NOMBRE_NUEVO .. " " .. fpsPing
-                end
-                
-                -- Ocultar Discord de ellos
-                if t:find("discord.gg") and not t:find(DISCORD_TUYO) then
-                    v.Visible = false
-                end
-
-                -- Forzar color blanco solo en botones/barra superior
-                if v:IsA("TextButton") or v.Parent.Name:find("Top") or v.Parent.Name:find("Bar") then
-                    v.TextColor3 = COLORS.TextWhite
-                end
-            end
-
-            -- 2. BLOQUEO DE COLORES DEL MENÚ
-            if v:IsA("GuiObject") then
-                -- Si es el azul de Nova, lo pasamos a Pro Black
-                if v.BackgroundColor3.b > 0.5 and v.BackgroundColor3.r < 0.5 then
-                    if v:IsA("Frame") or v:IsA("ScrollingFrame") then
-                        v.BackgroundColor3 = COLORS.Background
-                    elseif v:IsA("TextButton") or v:IsA("ImageButton") then
-                        v.BackgroundColor3 = COLORS.ButtonDark
-                        local s = v:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke", v)
-                        s.Color = COLORS.AccentBlue
+        local function apply()
+            pcall(function()
+                if v:IsA("TextLabel") or v:IsA("TextButton") then
+                    local t = v.Text or ""
+                    if (t:find("Nova") or t:find("nova")) and not t:find("Xero") then
+                        local newText = t:gsub("Nova hub", NOMBRE_NUEVO)
+                        newText = newText:gsub("Nova Hub", NOMBRE_NUEVO)
+                        newText = newText:gsub("Nova", NOMBRE_NUEVO)
+                        if v.Text ~= newText then v.Text = newText end
+                    end
+                    if t:find("discord.gg") and not t:find(DISCORD_TUYO) then
+                        v.Visible = false
+                    end
+                    if v:IsA("TextButton") or v.Parent.Name:find("Top") or v.Parent.Name:find("Bar") then
+                        v.TextColor3 = COLORS.TextWhite
                     end
                 end
-            end
-        end)
-    end
 
-    if v:IsA("GuiObject") then
-        v:GetPropertyChangedSignal("BackgroundColor3"):Connect(apply)
-        if v:IsA("TextLabel") or v:IsA("TextButton") then
-            v:GetPropertyChangedSignal("Text"):Connect(apply)
-        end
-    end
-    apply()
-end
-
--- 🛰️ VIGILANCIA
-game.DescendantAdded:Connect(function(obj)
-    task.defer(function() lockStyle(obj) end)
-end)
-
-for _, v in ipairs(CoreGui:GetDescendants()) do
-    lockStyle(v)
-end
-
--- 🚀 EJECUTAR SCRIPT NOVA
-loadstring(game:HttpGet("loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/752793106aac832ba8ddd9d8718e3189d73b69680acd7616ff256c77d42ac9d3/download"))()"))()
-
--- 💎 TU MARCA PERSONAL (INTOCABLE)
-local gui = Instance.new("ScreenGui", CoreGui)
-gui.Name = "MarcaXero"
-local text = Instance.new("TextLabel", gui)
-text.Size = UDim2.new(0, 300, 0, 25)
-text.Position = UDim2.new(0.5, -150, 0.4, 0)
-text.BackgroundTransparency = 1
-text.Text = DISCORD_TUYO
-text.TextColor3 = Color3.fromRGB(255, 255, 255)
-text.Font = Enum.Font.GothamBold
-text.TextSize = 18
-local stroke = Instance.new("UIStroke", text)
-stroke.Thickness = 2
-stroke.Color = Color3.fromRGB(0,0,0)
-end)
-
-task.spawn(function()
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- 🔥 CONFIGURACIÓN
-local NUEVO_NOMBRE = "Xero Apex hub"
-local BOTON_OBJETIVO = "INSTA RESET"
-
--- ⚡ FUNCIÓN DE ACTIVACIÓN INSTANTÁNEA
-local function fastClick()
-    for _, v in ipairs(CoreGui:GetDescendants()) do
-        if v:IsA("TextButton") and v.Text:find(BOTON_OBJETIVO) then
-            pcall(function()
-                -- Forzamos la activación del botón
-                for _, connection in pairs(getconnections(v.MouseButton1Click)) do
-                    connection:Fire()
+                if v:IsA("GuiObject") and v:FindFirstAncestorOfClass("ScreenGui") then
+                    if v.BackgroundColor3.b > 0.5 and v.BackgroundColor3.r < 0.5 then
+                        if v:IsA("Frame") or v:IsA("ScrollingFrame") then
+                            v.BackgroundColor3 = COLORS.Background
+                        elseif v:IsA("TextButton") or v:IsA("ImageButton") then
+                            v.BackgroundColor3 = COLORS.ButtonDark
+                            local s = v:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke", v)
+                            s.Color = COLORS.AccentBlue
+                        end
+                    end
                 end
             end)
-            break
         end
-    end
-end
 
--- 🛠️ CAMBIO DE NOMBRE
-local function renameHub(v)
-    if v:IsA("TextLabel") or v:IsA("TextButton") then
-        local function check()
-            if v.Text:find("ICE HUB") then
-                v.Text = NUEVO_NOMBRE
+        if v:IsA("GuiObject") then
+            v:GetPropertyChangedSignal("BackgroundColor3"):Connect(apply)
+            if v:IsA("TextLabel") or v:IsA("TextButton") then
+                v:GetPropertyChangedSignal("Text"):Connect(apply)
             end
         end
-        v:GetPropertyChangedSignal("Text"):Connect(check)
-        check()
+        apply()
     end
-end
 
--- 💀 DETECTAR MUERTE (Más rápido que esperar el Respawn)
-local function observeHealth(char)
-    local humanoid = char:WaitForChild("Humanoid", 5)
-    if humanoid then
-        humanoid.Died:Connect(function()
-            -- En cuanto la vida llega a 0, se activa
-            fastClick()
-        end)
-    end
-end
+    game.DescendantAdded:Connect(function(obj) task.defer(function() lockStyle(obj) end) end)
+    for _, v in ipairs(CoreGui:GetDescendants()) do lockStyle(v) end
 
--- Vigilancia constante de vida
-player.CharacterAdded:Connect(observeHealth)
-if player.Character then observeHealth(player.Character) end
+    -- 🚀 EJECUTAR NOVA
+    loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/752793106aac832ba8ddd9d8718e3189d73b69680acd7616ff256c77d42ac9d3/download"))()
 
--- 🛰️ VIGILAR INTERFAZ
-game.DescendantAdded:Connect(function(obj)
-    task.defer(function() renameHub(obj) end)
+    -- 💎 MARCA PERSONAL
+    local gui = Instance.new("ScreenGui", CoreGui)
+    gui.Name = "MarcaXero"
+    local text = Instance.new("TextLabel", gui)
+    text.Size = UDim2.new(0, 300, 0, 25)
+    text.Position = UDim2.new(0.5, -150, 0.4, 0)
+    text.BackgroundTransparency = 1
+    text.Text = DISCORD_TUYO
+    text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 18
+    local stroke = Instance.new("UIStroke", text)
+    stroke.Thickness = 2
+    stroke.Color = Color3.fromRGB(0,0,0)
 end)
 
-for _, v in ipairs(CoreGui:GetDescendants()) do
-    renameHub(v)
-end
+-- 🔥 2. SISTEMA DE AUTO-RESET INSTANTÁNEO (PARA ICE)
+task.spawn(function()
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
 
--- 🚀 EJECUTAR ICE HUB ORIGINAL
-loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/33c5200b167f07c0cc3472b4c80f3149.lua"))()
+    local NUEVO_NOMBRE = "Xero Apex hub"
+    local BOTON_OBJETIVO = "INSTA RESET"
 
--- Activación inicial
-task.spawn(fastClick)
+    local function fastClick()
+        for _, v in ipairs(CoreGui:GetDescendants()) do
+            if v:IsA("TextButton") and v.Text:find(BOTON_OBJETIVO) then
+                pcall(function()
+                    for _, connection in pairs(getconnections(v.MouseButton1Click)) do
+                        connection:Fire()
+                    end
+                end)
+                break
+            end
+        end
+    end
+
+    local function renameHub(v)
+        if v:IsA("TextLabel") or v:IsA("TextButton") then
+            local function check()
+                if v.Text:find("ICE HUB") then
+                    v.Text = NUEVO_NOMBRE
+                end
+            end
+            v:GetPropertyChangedSignal("Text"):Connect(check)
+            check()
+        end
+    end
+
+    local function observeHealth(char)
+        local humanoid = char:WaitForChild("Humanoid", 5)
+        if humanoid then
+            humanoid.Died:Connect(function()
+                fastClick()
+            end)
+        end
+    end
+
+    player.CharacterAdded:Connect(observeHealth)
+    if player.Character then observeHealth(player.Character) end
+
+    game.DescendantAdded:Connect(function(obj)
+        task.defer(function() renameHub(obj) end)
+    end)
+
+    for _, v in ipairs(CoreGui:GetDescendants()) do
+        renameHub(v)
+    end
+
+    -- 🚀 EJECUTAR ICE HUB
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/33c5200b167f07c0cc3472b4c80f3149.lua"))()
+
+    task.spawn(fastClick)
 end)
