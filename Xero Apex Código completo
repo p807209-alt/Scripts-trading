@@ -157,11 +157,11 @@ local d, di, ds, sp
 local auto = false
 
 -- ⚙️ AJUSTES
-local jumpPower = 50.4
+local jumpPower = 55.4
 local jumpDelay = 0.1
 
 local fallEnabled = true
-local fallBoost = -130
+local fallBoost = -140
 
 local function up(input)
 	local delta = input.Position - ds
