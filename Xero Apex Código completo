@@ -2,322 +2,171 @@ task.spawn(function()
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 
--- 🔥 CAMBIO NOVA → XERO APEX (HOOK LIGERO)
-local function hookLabel(v)
-    if v:IsA("TextLabel") then
-        v:GetPropertyChangedSignal("Text"):Connect(function()
-            pcall(function()
-                if v.Text and v.Text:find("Nova") then
-                    v.Text = v.Text:gsub("Nova Hub", "Xero Apex")
-                    v.Text = v.Text:gsub("Nova", "Xero Apex")
-                end
-            end)
-        end)
+-- 🔥 CONFIGURACIÓN
+local NOMBRE_NUEVO = "Xero Apex hub"
+local DISCORD_TUYO = "discord.gg/GfbPeZrzhN"
 
-        -- aplicar inicial
+-- 🎨 TU PALETA (PRO BLACK)
+local COLORS = {
+    Background = Color3.fromRGB(12, 12, 15),
+    ButtonDark = Color3.fromRGB(25, 25, 30),
+    AccentBlue = Color3.fromRGB(0, 140, 255),
+    TextWhite = Color3.fromRGB(240, 240, 240)
+}
+
+-- 🛠️ FUNCIÓN DE BLOQUEO (CON PROTECCIÓN TOTAL AL CHAT)
+local function lockStyle(v)
+    -- 🚨 ESCUDO MAESTRO: Si es del CHAT o de ROBLOX, NO TOCAR NADA.
+    -- Buscamos cualquier rastro de que sea parte del sistema de mensajes.
+    if v:FindFirstAncestor("Chat") or 
+       v:FindFirstAncestor("RobloxGui") or 
+       v:FindFirstAncestor("ExperienceChat") or 
+       v:FindFirstAncestor("MarcaXero") or
+       v.Name:find("Message") or 
+       v.Name:find("Chat") then
+        return 
+    end
+
+    local function apply()
         pcall(function()
-            if v.Text and v.Text:find("Nova") then
-                v.Text = v.Text:gsub("Nova Hub", "Xero Apex")
-                v.Text = v.Text:gsub("Nova", "Xero Apex")
+            -- 1. CONTROL DE TEXTOS (SOLO EN EL MENÚ)
+            if v:IsA("TextLabel") or v:IsA("TextButton") then
+                local t = v.Text or ""
+                
+                -- Cambiar nombre del Hub (Solo si NO es el chat)
+                if (t:find("Nova") or t:find("hub")) and not t:find("Xero") then
+                    local fpsPing = t:match("|.*") or ""
+                    v.Text = NOMBRE_NUEVO .. " " .. fpsPing
+                end
+                
+                -- Ocultar Discord de ellos
+                if t:find("discord.gg") and not t:find(DISCORD_TUYO) then
+                    v.Visible = false
+                end
+
+                -- Forzar color blanco solo en botones/barra superior
+                if v:IsA("TextButton") or v.Parent.Name:find("Top") or v.Parent.Name:find("Bar") then
+                    v.TextColor3 = COLORS.TextWhite
+                end
+            end
+
+            -- 2. BLOQUEO DE COLORES DEL MENÚ
+            if v:IsA("GuiObject") then
+                -- Si es el azul de Nova, lo pasamos a Pro Black
+                if v.BackgroundColor3.b > 0.5 and v.BackgroundColor3.r < 0.5 then
+                    if v:IsA("Frame") or v:IsA("ScrollingFrame") then
+                        v.BackgroundColor3 = COLORS.Background
+                    elseif v:IsA("TextButton") or v:IsA("ImageButton") then
+                        v.BackgroundColor3 = COLORS.ButtonDark
+                        local s = v:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke", v)
+                        s.Color = COLORS.AccentBlue
+                    end
+                end
             end
         end)
     end
-end
 
--- 🔥 OCULTAR SOLO UN DISCORD (ULTRA LIGERO)
-
-local TARGET = "discord.gg/vhu5rhjq9u"
-
-local function hideIfMatch(obj)
-    if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-        local t = obj.Text and string.lower(obj.Text)
-        if t and t:find(TARGET) then
-            obj.TextTransparency = 1
-            obj.TextStrokeTransparency = 1
-            obj.BackgroundTransparency = 1
+    if v:IsA("GuiObject") then
+        v:GetPropertyChangedSignal("BackgroundColor3"):Connect(apply)
+        if v:IsA("TextLabel") or v:IsA("TextButton") then
+            v:GetPropertyChangedSignal("Text"):Connect(apply)
         end
     end
+    apply()
 end
 
--- 🔥 DETECTAR NUEVOS (SIN LAG)
+-- 🛰️ VIGILANCIA
 game.DescendantAdded:Connect(function(obj)
-    task.defer(function()
-        pcall(function()
-            hideIfMatch(obj)
-            hookLabel(obj)
-        end)
-    end)
+    task.defer(function() lockStyle(obj) end)
 end)
 
--- 🔥 APLICAR A EXISTENTES
 for _, v in ipairs(CoreGui:GetDescendants()) do
-    pcall(function()
-        hideIfMatch(v)
-        hookLabel(v)
-    end)
+    lockStyle(v)
 end
 
--- 🔥 EJECUTAR SCRIPT (PRIMERO)
-loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/752793106aac832ba8ddd9d8718e3189d73b69680acd7616ff256c77d42ac9d3/download"))()
+-- 🚀 EJECUTAR SCRIPT NOVA
+loadstring(game:HttpGet("loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/752793106aac832ba8ddd9d8718e3189d73b69680acd7616ff256c77d42ac9d3/download"))()"))()
 
--- 🔥 CREAR TU TEXTO (INSTANTE DESPUÉS)
+-- 💎 TU MARCA PERSONAL (INTOCABLE)
+local gui = Instance.new("ScreenGui", CoreGui)
+gui.Name = "MarcaXero"
+local text = Instance.new("TextLabel", gui)
+text.Size = UDim2.new(0, 300, 0, 25)
+text.Position = UDim2.new(0.5, -150, 0.4, 0)
+text.BackgroundTransparency = 1
+text.Text = DISCORD_TUYO
+text.TextColor3 = Color3.fromRGB(255, 255, 255)
+text.Font = Enum.Font.GothamBold
+text.TextSize = 18
+local stroke = Instance.new("UIStroke", text)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(0,0,0)
+end)
 
+task.spawn(function()
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "DiscordTextPro"
-gui.Parent = player:WaitForChild("PlayerGui")
-gui.ResetOnSpawn = false
+-- 🔥 CONFIGURACIÓN
+local NUEVO_NOMBRE = "Xero Apex hub"
+local BOTON_OBJETIVO = "INSTA RESET"
 
-local text = Instance.new("TextLabel")
-text.Name = "MY_DISCORD_SAFE"
-text.Parent = gui
-
-text.Size = UDim2.new(0, 300, 0, 18)
-text.Position = UDim2.new(0.5, -150, 0.35, 0)
-
-text.BackgroundTransparency = 1
-text.Text = "discord.gg/GfbPeZrzhN"
-text.TextScaled = true
-text.Font = Enum.Font.GothamBold
-text.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local stroke = Instance.new("UIStroke", text)
-stroke.Thickness = 1.5
-stroke.Color = Color3.fromRGB(0, 0, 0)
-stroke.Transparency = 0
-end)
-
-task.spawn(function()
--- ⏳ ESPERAR 16 SEGUNDOS
-task.wait(16)
-
--- 💀 NO DUPLICAR GUI
-pcall(function()
-    local old = game.CoreGui:FindFirstChild("TpDownUI")
-    if old then old:Destroy() end
-end)
-
--- 🔥 SERVICIOS
-local u = game:GetService("UserInputService")
-local p = game:GetService("Players")
-local l = p.LocalPlayer
-local RunService = game:GetService("RunService")
-
--- 💾 ARCHIVO DE GUARDADO
-local file = "tpdown_pos.txt"
-
--- 🔥 CARGAR POSICIÓN GUARDADA
-local function loadPos()
-    if isfile and isfile(file) then
-        local s = readfile(file)
-        local xS,xO,yS,yO = s:match("([^,]+),([^,]+),([^,]+),([^,]+)")
-        if xS then
-            return UDim2.new(tonumber(xS), tonumber(xO), tonumber(yS), tonumber(yO))
+-- ⚡ FUNCIÓN DE ACTIVACIÓN INSTANTÁNEA
+local function fastClick()
+    for _, v in ipairs(CoreGui:GetDescendants()) do
+        if v:IsA("TextButton") and v.Text:find(BOTON_OBJETIVO) then
+            pcall(function()
+                -- Forzamos la activación del botón
+                for _, connection in pairs(getconnections(v.MouseButton1Click)) do
+                    connection:Fire()
+                end
+            end)
+            break
         end
     end
-    return UDim2.new(0.5,-70,0.65,0)
 end
 
--- 🔥 GUARDAR POSICIÓN
-local function savePos(pos)
-    if writefile then
-        writefile(file, table.concat({
-            pos.X.Scale,
-            pos.X.Offset,
-            pos.Y.Scale,
-            pos.Y.Offset
-        }, ","))
+-- 🛠️ CAMBIO DE NOMBRE
+local function renameHub(v)
+    if v:IsA("TextLabel") or v:IsA("TextButton") then
+        local function check()
+            if v.Text:find("ICE HUB") then
+                v.Text = NUEVO_NOMBRE
+            end
+        end
+        v:GetPropertyChangedSignal("Text"):Connect(check)
+        check()
     end
 end
 
-local startPos = loadPos()
-
--- GUI
-local g = Instance.new("ScreenGui")
-g.Name = "TpDownUI"
-g.Parent = game.CoreGui
-g.ResetOnSpawn = false
-
-local b = Instance.new("TextButton")
-b.Parent = g
-b.Size = UDim2.new(0,125,0,50)
-b.Position = startPos
-b.Text = "AUTO TP 🔄"
-b.Font = Enum.Font.GothamBold
-b.TextSize = 18
-b.TextColor3 = Color3.new(1,1,1)
-b.BackgroundColor3 = Color3.fromRGB(0,120,255)
-b.AutoButtonColor = true
-
-Instance.new("UICorner", b).CornerRadius = UDim.new(0,16)
-
--- DRAG
-local d, di, ds, sp
-local auto = false
-
--- ⚙️ AJUSTES
-local jumpPower = 55.4
-local jumpDelay = 0.1
-
-local fallEnabled = true
-local fallBoost = -140
-
-local function up(input)
-	local delta = input.Position - ds
-	b.Position = UDim2.new(sp.X.Scale, sp.X.Offset + delta.X, sp.Y.Scale, sp.Y.Offset + delta.Y)
+-- 💀 DETECTAR MUERTE (Más rápido que esperar el Respawn)
+local function observeHealth(char)
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    if humanoid then
+        humanoid.Died:Connect(function()
+            -- En cuanto la vida llega a 0, se activa
+            fastClick()
+        end)
+    end
 end
 
-b.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		d = true
-		ds = input.Position
-		sp = b.Position
+-- Vigilancia constante de vida
+player.CharacterAdded:Connect(observeHealth)
+if player.Character then observeHealth(player.Character) end
 
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				d = false
-				savePos(b.Position)
-			end
-		end)
-	end
+-- 🛰️ VIGILAR INTERFAZ
+game.DescendantAdded:Connect(function(obj)
+    task.defer(function() renameHub(obj) end)
 end)
 
-b.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		di = input
-	end
-end)
-
-u.InputChanged:Connect(function(input)
-	if input == di and d then
-		up(input)
-	end
-end)
-
--- 🔥 SALTO
-local function doJump()
-	local char = l.Character
-	if not char then return end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hum or not hrp then return end
-
-	if hum.FloorMaterial ~= Enum.Material.Air then
-		local vel = hrp.AssemblyLinearVelocity
-
-		hrp.AssemblyLinearVelocity = Vector3.new(
-			vel.X * 0.9,
-			jumpPower,
-			vel.Z * 0.9
-		)
-	end
+for _, v in ipairs(CoreGui:GetDescendants()) do
+    renameHub(v)
 end
 
--- 💀 CAÍDA
-RunService.Heartbeat:Connect(function()
-	if not auto or not fallEnabled then return end
+-- 🚀 EJECUTAR ICE HUB ORIGINAL
+loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/33c5200b167f07c0cc3472b4c80f3149.lua"))()
 
-	local char = l.Character
-	if not char then return end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hum or not hrp then return end
-
-	if hum.FloorMaterial == Enum.Material.Air then
-		local vel = hrp.AssemblyLinearVelocity
-		if vel.Y < 0 then
-			hrp.AssemblyLinearVelocity = Vector3.new(vel.X, vel.Y + fallBoost, vel.Z)
-		end
-	end
-end)
-
--- 💀 ANTI REBOTE + LOOP
-RunService.Heartbeat:Connect(function()
-	if not auto then return end
-
-	local char = l.Character
-	if not char then return end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hum or not hrp then return end
-
-	if hum.FloorMaterial ~= Enum.Material.Air then
-		local vel = hrp.AssemblyLinearVelocity
-
-		if vel.Y > 0 then
-			hrp.AssemblyLinearVelocity = Vector3.new(vel.X, 0, vel.Z)
-		end
-
-		hrp.AssemblyLinearVelocity = Vector3.new(
-			vel.X * 0.9,
-			jumpPower,
-			vel.Z * 0.9
-		)
-	end
-end)
-
--- LOOP
-task.spawn(function()
-	while true do
-		task.wait(jumpDelay)
-		if auto then
-			doJump()
-		end
-	end
-end)
-
--- =====================================================
--- 🚫 ANTI DROP SOLO CUANDO AUTO ESTÁ ACTIVADO
--- =====================================================
-
-local UIS = game:GetService("UserInputService")
-
-UIS.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-
-	if input.KeyCode == Enum.KeyCode.Backspace then
-		if auto then
-			return Enum.ContextActionResult.Sink
-		end
-	end
-end)
-
-local function handleTool(tool)
-	if tool:IsA("Tool") then
-		tool.CanBeDropped = not auto
-	end
-end
-
-for _,v in pairs(l.Backpack:GetChildren()) do
-	handleTool(v)
-end
-
-if l.Character then
-	for _,v in pairs(l.Character:GetChildren()) do
-		handleTool(v)
-	end
-end
-
-l.Backpack.ChildAdded:Connect(handleTool)
-
-l.CharacterAdded:Connect(function(char)
-	char.ChildAdded:Connect(handleTool)
-end)
-
--- BOTÓN
-b.MouseButton1Click:Connect(function()
-	auto = not auto
-
-	if auto then
-		b.Text = "AUTO TP 🔄"
-		b.BackgroundColor3 = Color3.fromRGB(200,0,0)
-	else
-		b.Text = "AUTO TP 🔄"
-		b.BackgroundColor3 = Color3.fromRGB(0,120,255)
-	end
-end)
+-- Activación inicial
+task.spawn(fastClick)
 end)
