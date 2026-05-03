@@ -2720,7 +2720,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(0,140,255)
-title.Text = "Xero Apex hub"
+title.Text = "Xero Apex hub Extras🚀"
 title.Parent = hub
 title.ZIndex = 11
 
