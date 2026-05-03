@@ -2655,6 +2655,7 @@ toggleBtn.Text = "≡"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 38
 toggleBtn.TextColor3 = Color3.new(1,1,1)
+
 --////////////////////////////////////////////////////
 -- BARRA SUPERIOR DE FPS Y PING
 --////////////////////////////////////////////////////
@@ -2705,6 +2706,80 @@ local function dragify(obj, name)
         if input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
+--////////////////////////////////////////////////////
+-- BARRA SUPERIOR DE FPS Y PING
+--////////////////////////////////////////////////////
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- 📁 CONFIG ARCHIVO
+local CONFIG_FILE = "XeroConfig.json"
+
+local HttpService = game:GetService("HttpService")
+
+local function LoadConfig()
+    if isfile and isfile(CONFIG_FILE) then
+        local data = readfile(CONFIG_FILE)
+        return HttpService:JSONDecode(data)
+    end
+    return {}
+end
+
+local function SaveConfig(tbl)
+    if writefile then
+        writefile(CONFIG_FILE, HttpService:JSONEncode(tbl))
+    end
+end
+
+local Config = LoadConfig()
+
+local function SavePos(name, obj)
+    Config[name] = {
+        XScale = obj.Position.X.Scale,
+        XOffset = obj.Position.X.Offset,
+        YScale = obj.Position.Y.Scale,
+        YOffset = obj.Position.Y.Offset
+    }
+    SaveConfig(Config)
+end
+
+local function LoadPos(name, default)
+    local d = Config[name]
+    if d then
+        return UDim2.new(d.XScale, d.XOffset, d.YScale, d.YOffset)
+    end
+    return default
+end
+
+-- 🔒 LOCK SOLO HUB
+local UILocked = false
+
+local function dragify(obj, name, isHub)
+    local dragging = false
+    local dragInput, startPos, startInput
+
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            if isHub and UILocked then return end
+
+            dragging = true
+            startInput = input.Position
+            startPos = obj.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    SavePos(name, obj)
+                end
+            end)
+        end
+    end)
+
+    obj.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
@@ -2723,7 +2798,7 @@ end
 
 -- 🧼 evitar duplicados
 if CoreGui:FindFirstChild("XeroApexUI") then
-CoreGui.XeroApexUI:Destroy()
+    CoreGui.XeroApexUI:Destroy()
 end
 
 -- 🖼️ SCREEN GUI
@@ -2731,45 +2806,35 @@ local sg = Instance.new("ScreenGui")
 sg.Name = "XeroApexUI"
 sg.Parent = CoreGui
 sg.IgnoreGuiInset = true
-
--- 🔥 FORZAR PRIORIDAD ARRIBA
 sg.DisplayOrder = 999999
 sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- BOTÓN ABRIR Y CERRAR GUI
+-- BOTÓN
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,55,0,55)
-
--- 🔥 TU POSICIÓN
-local defaultBtn = UDim2.new(1, -800, 1, -340)
-toggleBtn.Position = LoadPos("BtnPos", defaultBtn)
-
+toggleBtn.Position = LoadPos("BtnPos", UDim2.new(1, -800, 1, -340))
 toggleBtn.BackgroundColor3 = Color3.fromRGB(0,140,255)
 toggleBtn.Text = "≡"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 38
 toggleBtn.TextColor3 = Color3.new(1,1,1)
 toggleBtn.Parent = sg
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,14)
+Instance.new("UICorner", toggleBtn)
 
 toggleBtn.ZIndex = 10
 toggleBtn.Active = true
-toggleBtn.Draggable = false
 
--- HUB PANEL
+-- HUB
 local HUB_WIDTH = 280
 local HUB_HEIGHT = 420
+
 local hub = Instance.new("Frame")
 hub.Size = UDim2.new(0,HUB_WIDTH,0,HUB_HEIGHT)
-
--- 🔥 TU POSICIÓN
-local defaultHub = UDim2.new(0,550,0.5,-HUB_HEIGHT/2)
-hub.Position = LoadPos("HubPos", defaultHub)
-
+hub.Position = LoadPos("HubPos", UDim2.new(0,550,0.5,-HUB_HEIGHT/2))
 hub.BackgroundColor3 = Color3.fromRGB(0,0,0)
 hub.BackgroundTransparency = 0.25
 hub.Parent = sg
-Instance.new("UICorner", hub).CornerRadius = UDim.new(0,14)
+Instance.new("UICorner", hub)
 
 hub.ZIndex = 10
 hub.Visible = false
@@ -2778,6 +2843,24 @@ local strokeHub = Instance.new("UIStroke", hub)
 strokeHub.Color = Color3.fromRGB(0,140,255)
 strokeHub.Thickness = 2
 
+-- 🔒 BOTÓN LOCK
+local lockBtn = Instance.new("TextButton")
+lockBtn.Size = UDim2.new(0,80,0,25)
+lockBtn.Position = UDim2.new(1,-90,1,-30)
+lockBtn.Text = "Lock UI: OFF"
+lockBtn.TextSize = 12
+lockBtn.Font = Enum.Font.Gotham
+lockBtn.TextColor3 = Color3.fromRGB(255,255,255)
+lockBtn.BackgroundColor3 = Color3.fromRGB(25,25,30)
+lockBtn.Parent = hub
+Instance.new("UICorner", lockBtn)
+
+lockBtn.MouseButton1Click:Connect(function()
+    UILocked = not UILocked
+    lockBtn.Text = UILocked and "Lock UI: ON" or "Lock UI: OFF"
+end)
+
+-- TEXTO
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.55,0,0,40)
 title.Position = UDim2.new(0,12,0,8)
@@ -2788,31 +2871,27 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(0,140,255)
 title.Text = "Xero Apex hub"
 title.Parent = hub
-title.ZIndex = 11
 
+-- DISCORD
 local discordLabel = Instance.new("TextButton")
 discordLabel.Size = UDim2.new(0.4,0,0,40)
 discordLabel.Position = UDim2.new(0.50,6,0,8)
 discordLabel.BackgroundTransparency = 1
-discordLabel.TextColor3 = Color3.fromRGB(180,180,180)
-discordLabel.TextSize = 12
-discordLabel.Font = Enum.Font.Gotham
 discordLabel.Text = ""
 discordLabel.Parent = hub
-discordLabel.ZIndex = 11
 
 discordLabel.MouseButton1Click:Connect(function()
-setclipboard("")
+    setclipboard("")
 end)
 
--- 🔘 ABRIR / CERRAR HUB
+-- TOGGLE
 toggleBtn.MouseButton1Click:Connect(function()
-hub.Visible = not hub.Visible
+    hub.Visible = not hub.Visible
 end)
 
--- 🔥 ACTIVAR DRAG (AL FINAL PARA NO ROMPER NADA)
-dragify(toggleBtn, "BtnPos")
-dragify(hub, "HubPos")
+-- DRAG
+dragify(toggleBtn, "BtnPos", false)
+dragify(hub, "HubPos", true)
 
 --// LOCK TARGET SISTEMA
 local FOV_VALUE = Config["FOV Value"] or 90
