@@ -217,9 +217,9 @@ local routes = {
 clearAutoWalkParts()
 drawRoute(routes.START_A)
 drawRoute(routes.START_B)
+end)
 
-task.wait(8)
-
+task.spawn(function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/xero%20Apex%20v2%20lua"))()
 end)
 
