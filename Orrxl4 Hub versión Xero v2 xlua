@@ -5143,7 +5143,7 @@ task.spawn(function()
 
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0,120,0,40)
-    button.Position = UDim2.new(0.500, -483, 0.500, -190)
+    button.Position = UDim2.new(0.500, -410, 0.500, -190)
 
     button.Text = "TAUNT"
     button.Font = Enum.Font.GothamBold
