@@ -2603,10 +2603,31 @@ end
 
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
 
 -- 🧼 evitar duplicados
 if CoreGui:FindFirstChild("XeroApexUI") then
     CoreGui.XeroApexUI:Destroy()
+end
+
+-- 🧠 CONFIG GUARDADO
+getgenv().XeroConfig = getgenv().XeroConfig or {}
+
+local function SavePos(name, obj)
+    getgenv().XeroConfig[name] = {
+        XScale = obj.Position.X.Scale,
+        XOffset = obj.Position.X.Offset,
+        YScale = obj.Position.Y.Scale,
+        YOffset = obj.Position.Y.Offset
+    }
+end
+
+local function LoadPos(name, default)
+    local data = getgenv().XeroConfig[name]
+    if data then
+        return UDim2.new(data.XScale, data.XOffset, data.YScale, data.YOffset)
+    end
+    return default
 end
 
 -- 🖼️ SCREEN GUI
@@ -2614,22 +2635,20 @@ local sg = Instance.new("ScreenGui")
 sg.Name = "XeroApexUI"
 sg.Parent = CoreGui
 sg.IgnoreGuiInset = true
-
--- 🔥 FORZAR PRIORIDAD ARRIBA
 sg.DisplayOrder = 999999
 sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- 📱 ESCALA DINÁMICA SEGÚN PANTALLA
+-- 📱 ESCALA DINÁMICA
 local viewport = Camera.ViewportSize
 local scaleX = viewport.X / 1920
 local scaleY = viewport.Y / 1080
 
--- BOTÓN ABRIR Y CERRAR GUI
+-- 🔘 BOTÓN
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,55,0,55)
 
--- 🔥 MISMA POSICIÓN PERO ESCALADA
-toggleBtn.Position = UDim2.new(1, -900 * scaleX, 1, -340 * scaleY)
+local defaultBtnPos = UDim2.new(1, -900 * scaleX, 1, -340 * scaleY)
+toggleBtn.Position = LoadPos("BtnPos", defaultBtnPos)
 
 toggleBtn.BackgroundColor3 = Color3.fromRGB(0,140,255)
 toggleBtn.Text = "≡"
@@ -2641,17 +2660,16 @@ Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,14)
 
 toggleBtn.ZIndex = 10
 toggleBtn.Active = true
-toggleBtn.Draggable = false
 
--- HUB PANEL
+-- 📦 HUB
 local HUB_WIDTH = 280
 local HUB_HEIGHT = 420
 
 local hub = Instance.new("Frame")
 hub.Size = UDim2.new(0,HUB_WIDTH,0,HUB_HEIGHT)
 
--- 🔥 MISMA POSICIÓN PERO ESCALADA
-hub.Position = UDim2.new(0,650 * scaleX,0.5,-(HUB_HEIGHT/2) * scaleY)
+local defaultHubPos = UDim2.new(0,650 * scaleX,0.5,-(HUB_HEIGHT/2) * scaleY)
+hub.Position = LoadPos("HubPos", defaultHubPos)
 
 hub.BackgroundColor3 = Color3.fromRGB(0,0,0)
 hub.BackgroundTransparency = 0.25
@@ -2665,6 +2683,7 @@ local strokeHub = Instance.new("UIStroke", hub)
 strokeHub.Color = Color3.fromRGB(0,140,255)
 strokeHub.Thickness = 2
 
+-- 🏷️ TÍTULO
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.55,0,0,40)
 title.Position = UDim2.new(0,12,0,8)
@@ -2677,6 +2696,7 @@ title.Text = "Xero Apex hub"
 title.Parent = hub
 title.ZIndex = 11
 
+-- 🔘 DISCORD
 local discordLabel = Instance.new("TextButton")
 discordLabel.Size = UDim2.new(0.4,0,0,40)
 discordLabel.Position = UDim2.new(0.50,6,0,8)
@@ -2692,10 +2712,57 @@ discordLabel.MouseButton1Click:Connect(function()
     setclipboard("")
 end)
 
--- 🔘 ABRIR / CERRAR HUB
+-- 🔘 ABRIR / CERRAR
 toggleBtn.MouseButton1Click:Connect(function()
     hub.Visible = not hub.Visible
 end)
+
+--////////////////////////////////////////////////////
+-- 🧲 SISTEMA DRAG (CELULAR PRO)
+--////////////////////////////////////////////////////
+
+local function makeDraggable(guiObject, saveName)
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiObject.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    SavePos(saveName, guiObject)
+                end
+            end)
+        end
+    end)
+
+    guiObject.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+
+            guiObject.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- 🔥 ACTIVAR DRAG + GUARDADO
+makeDraggable(toggleBtn, "BtnPos")
+makeDraggable(hub, "HubPos")
 
 --// LOCK TARGET SISTEMA
 local FOV_VALUE = Config["FOV Value"] or 90
