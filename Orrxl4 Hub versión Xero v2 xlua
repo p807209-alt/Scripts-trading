@@ -2995,7 +2995,7 @@ end
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBarStats"
 topBar.Size = UDim2.new(0, 260, 0, 32)
-topBar.Position = UDim2.new(0.5, -130, 0, 15)
+topBar.Position = UDim2.new(0.5, -170, 0, 15)
 topBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 topBar.BackgroundTransparency = 0.2
 topBar.Parent = sg
@@ -3085,12 +3085,12 @@ discordLabel.BackgroundTransparency = 1
 discordLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 discordLabel.TextSize = 11
 discordLabel.Font = Enum.Font.Gotham
-discordLabel.Text = "discord link"
+discordLabel.Text = ""
 discordLabel.Parent = hub
 
 discordLabel.MouseButton1Click:Connect(function()
     if setclipboard then
-        setclipboard("discord.gg/S8FTtbakpr")
+        setclipboard("")
     end
 end)
 
