@@ -143,3 +143,84 @@ task.spawn(function()
     task.spawn(fastClick)
 end)
 
+task.spawn(function()
+-- ======================
+-- CUBOS VISUALES AUTO WALK
+-- ======================
+
+local autoWalkParts = {}
+
+local function clearAutoWalkParts()
+    for _,p in pairs(autoWalkParts) do
+        if p then
+            p:Destroy()
+        end
+    end
+    autoWalkParts = {}
+end
+
+local function createAutoWalkPart(pos)
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(1.2,1.2,1.2)
+    part.Anchored = true
+    part.CanCollide = false
+    part.CanTouch = false
+    part.CanQuery = false
+    part.Material = Enum.Material.Neon
+    part.Color = Color3.fromRGB(0,120,255)
+    part.Position = pos
+    part.Name = "AutoWalkPoint"
+    part.Parent = workspace
+
+    table.insert(autoWalkParts, part)
+end
+
+local function drawRoute(route)
+    -- cubo en StartPoint
+    createAutoWalkPart(route.StartPoint)
+
+    -- cubos en cada punto de la ruta
+    for _,point in ipairs(route.Route) do
+        createAutoWalkPart(point)
+    end
+end
+
+-- ======================
+-- RUTAS
+-- ======================
+
+local routes = {
+    START_A = {
+        StartPoint = Vector3.new(-484.37, -5.22, 94.32),
+        Route = {
+            Vector3.new(-476, -8, 29),
+            Vector3.new(-480, -6, 25),
+            Vector3.new(-486, -6, 25),
+            Vector3.new(-475.75, -7.03, 94.03)
+        }
+    },
+    START_B = {
+        StartPoint = Vector3.new(-485.08, -5.22, 25.94),
+        Route = {
+            Vector3.new(-476.07, -8, 91.05),
+            Vector3.new(-480.07, -6, 95.05),
+            Vector3.new(-486.07, -6, 95.05),
+            Vector3.new(-476.08, -6.89, 25.65)
+        }
+    }
+}
+
+-- ======================
+-- EJECUCIÓN INMEDIATA
+-- ======================
+
+clearAutoWalkParts()
+drawRoute(routes.START_A)
+drawRoute(routes.START_B)
+
+task.wait(3)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/xero%20Apex%20v2%20lua"))()
+end)
+
+
