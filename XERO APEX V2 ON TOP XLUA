@@ -1,5 +1,3 @@
--- [[ XERO APEX - COMBO HUB (NOVA + ICE) ]]
-
 -- 🔥 1. SISTEMA DE RE-SKIN Y COLORES (PARA NOVA)
 task.spawn(function()
     local CoreGui = game:GetService("CoreGui")
@@ -65,7 +63,7 @@ task.spawn(function()
     for _, v in ipairs(CoreGui:GetDescendants()) do lockStyle(v) end
 
     -- 🚀 EJECUTAR NOVA
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Orrxl4%20Hub%20versi%C3%B3n%20Xero%20v2%20xlua"))
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Orrxl4%20Hub%20versi%C3%B3n%20Xero%20v2%20xlua"))()
 
     -- 💎 MARCA PERSONAL
     local gui = Instance.new("ScreenGui", CoreGui)
