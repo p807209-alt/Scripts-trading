@@ -2829,13 +2829,106 @@ local HUB_WIDTH = 280
 local HUB_HEIGHT = 420
 
 local hub = Instance.new("Frame")
+
+--////////////////////////////////////////////////////
+-- BARRA SUPERIOR DE FPS Y PING (CON GUARDADO DE POSICIÓN)
+--////////////////////////////////////////////////////
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+-- 📂 SISTEMA DE GUARDADO (Archivo local)
+local fileName = "XeroApexConfig.json"
+local defaultPos = {X = 1, XOffset = -800, Y = 1, YOffset = -340}
+
+local function savePos(pos)
+    if writefile then
+        local data = {X = pos.X.Scale, XOffset = pos.X.Offset, Y = pos.Y.Scale, YOffset = pos.Y.Offset}
+        writefile(fileName, HttpService:JSONEncode(data))
+    end
+end
+
+local function loadPos()
+    if isfile and isfile(fileName) then
+        local status, data = pcall(function() return HttpService:JSONDecode(readfile(fileName)) end)
+        if status then
+            return UDim2.new(data.X, data.XOffset, data.Y, data.YOffset)
+        end
+    end
+    return UDim2.new(defaultPos.X, defaultPos.XOffset, defaultPos.Y, defaultPos.YOffset)
+end
+
+-- 🧼 evitar duplicados
+if CoreGui:FindFirstChild("XeroApexUI") then
+    CoreGui.XeroApexUI:Destroy()
+end
+
+-- 🖼️ SCREEN GUI
+local sg = Instance.new("ScreenGui")
+sg.Name = "XeroApexUI"
+sg.Parent = CoreGui
+sg.IgnoreGuiInset = true
+sg.DisplayOrder = 999999
+sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- BOTÓN ABRIR Y CERRAR GUI
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0,55,0,55)
+
+-- 🔥 CARGAR POSICIÓN GUARDADA
+toggleBtn.Position = loadPos()
+
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0,140,255)
+toggleBtn.Text = "≡"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 38
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Parent = sg
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,14)
+toggleBtn.ZIndex = 10
+toggleBtn.Active = true
+
+-- 🖱️ LÓGICA PARA MOSTRAR/ARRASTRAR
+local dragging, dragInput, dragStart, startPos
+
+toggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = toggleBtn.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                savePos(toggleBtn.Position) -- 💾 Guardar al soltar
+            end
+        end)
+    end
+end)
+
+toggleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        toggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- HUB PANEL
+local HUB_WIDTH = 280
+local HUB_HEIGHT = 420
+local hub = Instance.new("Frame")
 hub.Size = UDim2.new(0,HUB_WIDTH,0,HUB_HEIGHT)
-hub.Position = LoadPos("HubPos", UDim2.new(0,550,0.5,-HUB_HEIGHT/2))
+hub.Position = UDim2.new(0,550,0.5,-HUB_HEIGHT/2)
 hub.BackgroundColor3 = Color3.fromRGB(0,0,0)
 hub.BackgroundTransparency = 0.25
 hub.Parent = sg
-Instance.new("UICorner", hub)
-
+Instance.new("UICorner", hub).CornerRadius = UDim.new(0,14)
 hub.ZIndex = 10
 hub.Visible = false
 
@@ -2843,24 +2936,6 @@ local strokeHub = Instance.new("UIStroke", hub)
 strokeHub.Color = Color3.fromRGB(0,140,255)
 strokeHub.Thickness = 2
 
--- 🔒 BOTÓN LOCK
-local lockBtn = Instance.new("TextButton")
-lockBtn.Size = UDim2.new(0,80,0,25)
-lockBtn.Position = UDim2.new(1,-90,1,-30)
-lockBtn.Text = "Lock UI: OFF"
-lockBtn.TextSize = 12
-lockBtn.Font = Enum.Font.Gotham
-lockBtn.TextColor3 = Color3.fromRGB(255,255,255)
-lockBtn.BackgroundColor3 = Color3.fromRGB(25,25,30)
-lockBtn.Parent = hub
-Instance.new("UICorner", lockBtn)
-
-lockBtn.MouseButton1Click:Connect(function()
-    UILocked = not UILocked
-    lockBtn.Text = UILocked and "Lock UI: ON" or "Lock UI: OFF"
-end)
-
--- TEXTO
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.55,0,0,40)
 title.Position = UDim2.new(0,12,0,8)
@@ -2871,27 +2946,27 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(0,140,255)
 title.Text = "Xero Apex hub"
 title.Parent = hub
+title.ZIndex = 11
 
--- DISCORD
 local discordLabel = Instance.new("TextButton")
 discordLabel.Size = UDim2.new(0.4,0,0,40)
 discordLabel.Position = UDim2.new(0.50,6,0,8)
 discordLabel.BackgroundTransparency = 1
+discordLabel.TextColor3 = Color3.fromRGB(180,180,180)
+discordLabel.TextSize = 12
+discordLabel.Font = Enum.Font.Gotham
 discordLabel.Text = ""
 discordLabel.Parent = hub
+discordLabel.ZIndex = 11
 
 discordLabel.MouseButton1Click:Connect(function()
     setclipboard("")
 end)
 
--- TOGGLE
+-- 🔘 ABRIR / CERRAR HUB
 toggleBtn.MouseButton1Click:Connect(function()
     hub.Visible = not hub.Visible
 end)
-
--- DRAG
-dragify(toggleBtn, "BtnPos", false)
-dragify(hub, "HubPos", true)
 
 --// LOCK TARGET SISTEMA
 local FOV_VALUE = Config["FOV Value"] or 90
