@@ -1,108 +1,84 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local MarketplaceService = game:GetService("MarketplaceService")
+-- [[ XERO APEX - COMBO HUB (NOVA + ICE) ]]
 
--- 🔑 KEY CORRECTA
-local CORRECT_KEY = "A3FCFB7ECCPSKD173"
+-- 🔥 1. SISTEMA DE RE-SKIN Y COLORES (PARA NOVA)
+task.spawn(function()
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
 
--- 👥 WHITELIST
-local WHITELIST = {
-    [9497821880] = true,
-    [1580638982] = true,
-    [10780244223] = true,
-    [10024672051] = true,
-    [9023722838] = true,
-    [10471387320] = true,
-}
+    local NOMBRE_NUEVO = "Xero Apex hub"
+    local DISCORD_TUYO = "discord.gg/GfbPeZrzhN"
 
--- 🚫 BLACKLIST
-local BLACKLIST = {
-    [11111111] = true,
-    [22222222] = true,
-}
+    local COLORS = {
+        Background = Color3.fromRGB(12, 12, 15),
+        ButtonDark = Color3.fromRGB(25, 25, 30),
+        AccentBlue = Color3.fromRGB(0, 140, 255),
+        TextWhite = Color3.fromRGB(240, 240, 240)
+    }
 
--- 🔑 KEY DEL USUARIO
-local userKey = getgenv().key
+    local function lockStyle(v)
+        if v:FindFirstAncestor("RobloxGui") or v:FindFirstAncestor("Chat") or v:FindFirstAncestor("MarcaXero") then
+            return 
+        end
 
--- 🚫 BLOQUEO PRIMERO
-if BLACKLIST[player.UserId] then
-    player:Kick("Xero Apex Hub\n\nAcceso denegado (Blacklisted)")
-    return
-end
+        local function apply()
+            pcall(function()
+                if v:IsA("TextLabel") or v:IsA("TextButton") then
+                    local t = v.Text or ""
+                    if (t:find("Nova") or t:find("nova")) and not t:find("Xero") then
+                        local newText = t:gsub("Nova hub", NOMBRE_NUEVO)
+                        newText = newText:gsub("Nova Hub", NOMBRE_NUEVO)
+                        newText = newText:gsub("Nova", NOMBRE_NUEVO)
+                        if v.Text ~= newText then v.Text = newText end
+                    end
+                    if t:find("discord.gg") and not t:find(DISCORD_TUYO) then
+                        v.Visible = false
+                    end
+                    if v:IsA("TextButton") or v.Parent.Name:find("Top") or v.Parent.Name:find("Bar") then
+                        v.TextColor3 = COLORS.TextWhite
+                    end
+                end
 
--- ❌ VALIDACIÓN
-local hasAccess = WHITELIST[player.UserId] or (userKey == CORRECT_KEY)
+                if v:IsA("GuiObject") and v:FindFirstAncestorOfClass("ScreenGui") then
+                    if v.BackgroundColor3.b > 0.5 and v.BackgroundColor3.r < 0.5 then
+                        if v:IsA("Frame") or v:IsA("ScrollingFrame") then
+                            v.BackgroundColor3 = COLORS.Background
+                        elseif v:IsA("TextButton") or v:IsA("ImageButton") then
+                            v.BackgroundColor3 = COLORS.ButtonDark
+                            local s = v:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke", v)
+                            s.Color = COLORS.AccentBlue
+                        end
+                    end
+                end
+            end)
+        end
 
-if not hasAccess then
-    player:Kick("Xero Apex hub\n\nKey requerida o no se encontró registro en el HWID")   
-    return
-end
-
--- 🧠 ANTI SPAM
-if getgenv().XeroApexLogged then
-    return
-end
-getgenv().XeroApexLogged = true
-
--- 📡 WEBHOOK
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1489759936014586007/5RidQclHHPLaZxscWVK0DTAu_e78uUSAwwmVp6wlkykHvFEAT36GMRTvsCV5P7rVF8E9"
-
--- 🖥️ EXECUTOR
-local executorName = identifyexecutor and identifyexecutor() or "Unknown"
-
--- 👥 PLAYERS
-local playersCount = #Players:GetPlayers()
-local maxPlayers = Players.MaxPlayers
-
--- 🎮 NOMBRE DEL JUEGO
-local gameName = "Unknown Game"
-pcall(function()
-    local info = MarketplaceService:GetProductInfo(game.PlaceId)
-    if info and info.Name then
-        gameName = info.Name
+        if v:IsA("GuiObject") then
+            v:GetPropertyChangedSignal("BackgroundColor3"):Connect(apply)
+            if v:IsA("TextLabel") or v:IsA("TextButton") then
+                v:GetPropertyChangedSignal("Text"):Connect(apply)
+            end
+        end
+        apply()
     end
+
+    game.DescendantAdded:Connect(function(obj) task.defer(function() lockStyle(obj) end) end)
+    for _, v in ipairs(CoreGui:GetDescendants()) do lockStyle(v) end
+
+    -- 🚀 EJECUTAR NOVA
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Orrxl4%20Hub%20versi%C3%B3n%20Xero%20v2%20xlua"))
+
+    -- 💎 MARCA PERSONAL
+    local gui = Instance.new("ScreenGui", CoreGui)
+    gui.Name = "MarcaXero"
+    local text = Instance.new("TextLabel", gui)
+    text.Size = UDim2.new(0, 300, 0, 25)
+    text.Position = UDim2.new(0.5, -150, 0.4, 0)
+    text.BackgroundTransparency = 1
+    text.Text = DISCORD_TUYO
+    text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 18
+    local stroke = Instance.new("UIStroke", text)
+    stroke.Thickness = 2
+    stroke.Color = Color3.fromRGB(0,0,0)
 end)
-
--- 📅 FECHA
-local timeStamp = os.date("%Y-%m-%d %H:%M:%S")
-
--- 📡 DATA
-local data = {
-    ["username"] = "Xero Apex Logger",
-    ["embeds"] = {{
-        ["title"] = "🚀 Script Ejecutado",
-        ["color"] = 65280,
-        ["fields"] = {
-
-            {["name"] = "👤 Username", ["value"] = player.Name, ["inline"] = true},
-            {["name"] = "🧾 Display", ["value"] = player.DisplayName, ["inline"] = true},
-            {["name"] = "🆔 UserId", ["value"] = tostring(player.UserId), ["inline"] = true},
-
-            {["name"] = "🎮 Game", ["value"] = gameName, ["inline"] = false},
-
-            {["name"] = "👥 Players", ["value"] = playersCount .. "/" .. maxPlayers, ["inline"] = true},
-
-            {["name"] = "🖥️ Executor", ["value"] = executorName, ["inline"] = true},
-            {["name"] = "🔐 Access", ["value"] = WHITELIST[player.UserId] and "Whitelist" or "Key", ["inline"] = true},
-
-            {["name"] = "⏱️ Fecha", ["value"] = timeStamp, ["inline"] = false},
-
-        }
-    }}
-}
-
--- 📤 ENVIAR
-pcall(function()
-    request({
-        Url = WEBHOOK_URL,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json"
-        },
-        Body = HttpService:JSONEncode(data)
-    })
-end)
-
--- 🔥 LOAD HUB
-loadstring(game:HttpGet("https://raw.githubusercontent.com/p807209-alt/Scripts-trading/refs/heads/main/Xero%20Apex%20C%C3%B3digo%20completo"))()
