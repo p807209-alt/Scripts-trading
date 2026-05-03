@@ -2602,6 +2602,7 @@ end
 --////////////////////////////////////////////////////
 
 local CoreGui = game:GetService("CoreGui")
+local Camera = workspace.CurrentCamera
 
 -- 🧼 evitar duplicados
 if CoreGui:FindFirstChild("XeroApexUI") then
@@ -2618,16 +2619,19 @@ sg.IgnoreGuiInset = true
 sg.DisplayOrder = 999999
 sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+-- 📱 ESCALA DINÁMICA SEGÚN PANTALLA
+local viewport = Camera.ViewportSize
+local scaleX = viewport.X / 1920
+local scaleY = viewport.Y / 1080
+
 -- BOTÓN ABRIR Y CERRAR GUI
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,55,0,55)
 
--- 🔥 POSICIÓN FIJA
-toggleBtn.Position = UDim2.new(1, -900, 1, -340)
+-- 🔥 MISMA POSICIÓN PERO ESCALADA
+toggleBtn.Position = UDim2.new(1, -900 * scaleX, 1, -340 * scaleY)
 
--- 🔵 COLOR DE TUS SETTINGS
 toggleBtn.BackgroundColor3 = Color3.fromRGB(0,140,255)
-
 toggleBtn.Text = "≡"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 38
@@ -2635,27 +2639,26 @@ toggleBtn.TextColor3 = Color3.new(1,1,1)
 toggleBtn.Parent = sg
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,14)
 
--- 🔥 PRIORIDAD INDIVIDUAL
 toggleBtn.ZIndex = 10
-
 toggleBtn.Active = true
 toggleBtn.Draggable = false
 
 -- HUB PANEL
 local HUB_WIDTH = 280
 local HUB_HEIGHT = 420
+
 local hub = Instance.new("Frame")
 hub.Size = UDim2.new(0,HUB_WIDTH,0,HUB_HEIGHT)
-hub.Position = UDim2.new(0,650,0.5,-HUB_HEIGHT/2)
+
+-- 🔥 MISMA POSICIÓN PERO ESCALADA
+hub.Position = UDim2.new(0,650 * scaleX,0.5,-(HUB_HEIGHT/2) * scaleY)
+
 hub.BackgroundColor3 = Color3.fromRGB(0,0,0)
 hub.BackgroundTransparency = 0.25
 hub.Parent = sg
 Instance.new("UICorner", hub).CornerRadius = UDim.new(0,14)
 
--- 🔥 PRIORIDAD
 hub.ZIndex = 10
-
--- 🔒 INICIAR CERRADO
 hub.Visible = false
 
 local strokeHub = Instance.new("UIStroke", hub)
