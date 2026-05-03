@@ -46,6 +46,7 @@ local Config = {
     ["TP Down"] = false,
     ["Fast Steal"] = false,
     ["Drop Brainrot"] = false,
+    ["Auto Play"] = false,
     ["No Player Collision"] = false,
     ["Fling"] = false,
 
@@ -4394,7 +4395,7 @@ end)
 
 end
 
-local combatFuncs = {"TP Down","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Manual TP","Auto Exit Duel"}
+local combatFuncs = {"TP Down","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Auto Play","Manual TP","Auto Exit Duel"}
 for _,f in ipairs(combatFuncs) do CreateToggle("Combat",f) end
 
 local playerFuncs = {"Speed Customizer","No Walk Animation","Anti Ragdoll","Spin Body","Infinite Jump","Super Jump","No Player Collision"}
