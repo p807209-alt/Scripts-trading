@@ -5381,3 +5381,136 @@ clearAutoWalkParts()
 drawRoute(routes.START_A)
 drawRoute(routes.START_B)
 end)
+
+task.spawn(function()
+-- ============================================================
+--   CONFIGURACIÓN Y PERSISTENCIA (GUARDADO)
+-- ============================================================
+local HttpService = game:GetService("HttpService")
+local configFileName = "XeroApex_Config.json"
+
+local STEAL_RADIUS = 8
+local STEAL_DURATION = 0.2
+
+local function saveConfig()
+    local data = {radius = STEAL_RADIUS, duration = STEAL_DURATION}
+    pcall(function() writefile(configFileName, HttpService:JSONEncode(data)) end)
+end
+
+local function loadConfig()
+    if isfile(configFileName) then
+        local success, data = pcall(function() return HttpService:JSONDecode(readfile(configFileName)) end)
+        if success then 
+            STEAL_RADIUS = data.radius or 8 
+            STEAL_DURATION = data.duration or 0.2
+        end
+    end
+end
+loadConfig()
+
+-- ============================================================
+--   VARIABLES INICIALES
+-- ============================================================
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local animalCache, promptCache, stealCache = {}, {}, {}
+local autoStealEnabled, isStealing = true, false
+local autoStealConn, progressConn, stealStartTime
+
+local TH = {
+    accent = Color3.fromRGB(255, 160, 55),
+    text   = Color3.fromRGB(255, 255, 255),
+    panel3 = Color3.fromRGB(30, 32, 40),
+    green  = Color3.fromRGB(0, 255, 128)
+}
+
+local function getHRP() 
+    return LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") 
+end
+
+-- ============================================================
+--   DISEÑO: XERO APEX (CENTRO ABAJO - SEPARADO Y MOVIBLE)
+-- ============================================================
+local PBGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+PBGui.Name = "XeroApex_Final"
+
+local PBC = Instance.new("Frame", PBGui)
+PBC.Size = UDim2.new(0, 280, 0, 45)
+-- Posicionado en el centro abajo, separado 100 píxeles del borde inferior
+PBC.Position = UDim2.new(0.5, -140, 1, -100) 
+PBC.BackgroundColor3 = Color3.fromRGB(8, 10, 16)
+PBC.BorderSizePixel = 0
+PBC.Active = true
+PBC.Draggable = true -- Habilita que sea movible
+Instance.new("UICorner", PBC).CornerRadius = UDim.new(0, 12)
+local stroke = Instance.new("UIStroke", PBC)
+stroke.Color = TH.accent; stroke.Thickness = 1.8
+
+local pbTitle = Instance.new("TextLabel", PBC)
+pbTitle.Size = UDim2.new(1, 0, 0, 18); pbTitle.Position = UDim2.new(0, 0, 0, 2)
+pbTitle.BackgroundTransparency = 1; pbTitle.Text = "XERO APEX"
+pbTitle.TextColor3 = TH.accent; pbTitle.Font = Enum.Font.GothamBlack; pbTitle.TextSize = 13
+
+ProgressLabel = Instance.new("TextLabel", PBC)
+ProgressLabel.Size = UDim2.new(0.3, 0, 0, 20); ProgressLabel.Position = UDim2.new(0.35, 0, 0.30, 0)
+ProgressLabel.Text = "READY"; ProgressLabel.TextColor3 = TH.text
+ProgressLabel.Font = Enum.Font.GothamBold; ProgressLabel.TextSize = 9; ProgressLabel.BackgroundTransparency = 1
+ProgressPctLabel = Instance.new("TextLabel", PBC); ProgressPctLabel.Visible = false
+
+-- INPUT RADIO (DERECHA)
+local RadiusInput = Instance.new("TextBox", PBC)
+RadiusInput.Size = UDim2.new(0, 35, 0, 18); RadiusInput.Position = UDim2.new(1, -55, 0, 6)
+RadiusInput.BackgroundColor3 = Color3.fromRGB(20, 20, 25); RadiusInput.Text = tostring(STEAL_RADIUS)
+RadiusInput.TextColor3 = TH.accent; RadiusInput.Font = Enum.Font.GothamBold; RadiusInput.TextSize = 10
+Instance.new("UICorner", RadiusInput)
+RadiusInput.FocusLost:Connect(function() STEAL_RADIUS = tonumber(RadiusInput.Text) or STEAL_RADIUS; RadiusInput.Text = tostring(STEAL_RADIUS); saveConfig() end)
+
+-- INPUT TIEMPO (IZQUIERDA)
+local TimeInput = Instance.new("TextBox", PBC)
+TimeInput.Size = UDim2.new(0, 35, 0, 18); TimeInput.Position = UDim2.new(0, 25, 0, 6)
+TimeInput.BackgroundColor3 = Color3.fromRGB(20, 20, 25); TimeInput.Text = tostring(STEAL_DURATION)
+TimeInput.TextColor3 = TH.green; TimeInput.Font = Enum.Font.GothamBold; TimeInput.TextSize = 10
+Instance.new("UICorner", TimeInput)
+TimeInput.FocusLost:Connect(function() STEAL_DURATION = tonumber(TimeInput.Text) or STEAL_DURATION; TimeInput.Text = tostring(STEAL_DURATION); saveConfig() end)
+
+local pbTrack = Instance.new("Frame", PBC)
+pbTrack.Size = UDim2.new(0.94, 0, 0, 4); pbTrack.Position = UDim2.new(0.03, 0, 1, -12)
+pbTrack.BackgroundColor3 = TH.panel3
+ProgressBarFill = Instance.new("Frame", pbTrack)
+ProgressBarFill.Size = UDim2.new(0, 0, 1, 0); ProgressBarFill.BackgroundColor3 = TH.green
+Instance.new("UICorner", ProgressBarFill)
+
+-- ============================================================
+--   LÓGICA: AUTO STEAL (TU FUNCIÓN)
+-- ============================================================
+local function isMyBase(pn) local pl=workspace:FindFirstChild("Plots"); if not pl then return false end; local p=pl:FindFirstChild(pn); if not p then return false end; local s=p:FindFirstChild("PlotSign"); if not s then return false end; local yb=s:FindFirstChild("YourBase"); return yb and yb:IsA("BillboardGui") and yb.Enabled end
+local function scanPlot(plot) if not plot or not plot:IsA("Model") then return end; if isMyBase(plot.Name) then return end; local pods=plot:FindFirstChild("AnimalPodiums"); if not pods then return end; for _,pod in ipairs(pods:GetChildren()) do if pod:IsA("Model") and pod:FindFirstChild("Base") then table.insert(animalCache,{plot=plot.Name,slot=pod.Name,worldPosition=pod:GetPivot().Position,uid=plot.Name.."_"..pod.Name}) end end end
+local function findPromptForAnimal(ad) if not ad then return nil end; local cp=promptCache[ad.uid]; if cp and cp.Parent then return cp end; local plots=workspace:FindFirstChild("Plots"); local plot=plots and plots:FindFirstChild(ad.plot); local pods=plot and plot:FindFirstChild("AnimalPodiums"); local pod=pods and pods:FindFirstChild(ad.slot); local base=pod and pod:FindFirstChild("Base"); local sp=base and base:FindFirstChild("Spawn"); local att=sp and sp:FindFirstChild("PromptAttachment"); if att then for _,p in ipairs(att:GetChildren()) do if p:IsA("ProximityPrompt") then promptCache[ad.uid]=p; return p end end end return nil end
+local function buildCallbacks(prompt) if stealCache[prompt] then return end; local data={hold={},trigger={},ready=true}; pcall(function() if getconnections then for _,c in ipairs(getconnections(prompt.PromptButtonHoldBegan)) do if type(c.Function)=="function" then table.insert(data.hold,c.Function) end end; for _,c in ipairs(getconnections(prompt.Triggered)) do if type(c.Function)=="function" then table.insert(data.trigger,c.Function) end end end end); if #data.hold>0 or #data.trigger>0 then stealCache[prompt]=data end end
+
+local function execSteal(prompt)
+    local data=stealCache[prompt]; if not data or not data.ready then return false end; data.ready=false; isStealing=true; stealStartTime=tick()
+    if ProgressLabel then ProgressLabel.Text="STEALING..." end
+    if progressConn then progressConn:Disconnect() end
+    progressConn=RunService.Heartbeat:Connect(function() if not isStealing then progressConn:Disconnect(); return end; local prog=math.clamp((tick()-stealStartTime)/STEAL_DURATION,0,1); if ProgressBarFill then ProgressBarFill.Size=UDim2.new(prog,0,1,0) end; if ProgressPctLabel then ProgressPctLabel.Text=math.floor(prog*100).."%" end end)
+    task.spawn(function() for _,f in ipairs(data.hold) do task.spawn(f) end; task.wait(STEAL_DURATION); for _,f in ipairs(data.trigger) do task.spawn(f) end; if progressConn then progressConn:Disconnect() end; if ProgressLabel then ProgressLabel.Text="READY" end; if ProgressPctLabel then ProgressPctLabel.Text="" end; if ProgressBarFill then ProgressBarFill.Size=UDim2.new(0,0,1,0) end; data.ready=true; isStealing=false end)
+    return true
+end
+
+local function nearestAnimal() local h=getHRP(); if not h then return nil end; local best,bestD=nil,math.huge; for _,ad in ipairs(animalCache) do if not isMyBase(ad.plot) and ad.worldPosition then local d=(h.Position-ad.worldPosition).Magnitude; if d<bestD then bestD=d; best=ad end end end; return best end
+
+function startAutoSteal() if autoStealConn then return end; autoStealConn=RunService.Heartbeat:Connect(function() if not autoStealEnabled or isStealing then return end; local target=nearestAnimal(); if not target then return end; local h=getHRP(); if not h then return end; if (h.Position-target.worldPosition).Magnitude>STEAL_RADIUS then return end; local prompt=promptCache[target.uid]; if not prompt or not prompt.Parent then prompt=findPromptForAnimal(target) end; if prompt then buildCallbacks(prompt); execSteal(prompt) end end) end
+function stopAutoSteal() if autoStealConn then autoStealConn:Disconnect(); autoStealConn=nil end; isStealing=false; if progressConn then progressConn:Disconnect() end; if ProgressBarFill then ProgressBarFill.Size=UDim2.new(0,0,1,0) end; if ProgressLabel then ProgressLabel.Text="READY" end; if ProgressPctLabel then ProgressPctLabel.Text="" end end
+
+-- Inicio de Escaneo y Ejecución
+task.spawn(function()
+    task.wait(2)
+    local plots=workspace:WaitForChild("Plots",10)
+    if plots then
+        for _,p in ipairs(plots:GetChildren()) do if p:IsA("Model") then scanPlot(p) end end
+        plots.ChildAdded:Connect(function(p) if p:IsA("Model") then task.wait(0.5); scanPlot(p) end end)
+        startAutoSteal()
+    end
+end)
+end)
