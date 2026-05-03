@@ -37,8 +37,8 @@ local Config = {
     ["ESP Players"] = false,
     ["No Walk Animation"] = false,
     ["Auto Bat"] = false,
-    ["Lock Target"] = false,
-    ["Auto Play"] = false,
+    ["Lock Target v2"] = false,
+    ["TP Down"] = false,
     ["Fast Steal"] = false,
     ["No Player Collision"] = false,
     
@@ -46,6 +46,16 @@ local Config = {
     ["LockButtonY"] = 0.5,
     ["LockButtonOffsetX"] = -70,
     ["LockButtonOffsetY"] = 0,
+
+    ["Toggle Button X"] = 1,
+    ["Toggle Button Y"] = 0,
+    ["Toggle Button OffsetX"] = -70,
+    ["Toggle Button OffsetY"] = 70,
+
+    ["TP Down Button X"] = 0.5,
+    ["TP Down Button Y"] = 0.7,
+    ["TP Down Button OffsetX"] = -70,
+    ["TP Down Button OffsetY"] = 0,
 
     ["Toggle Button X"] = 1,
     ["Toggle Button Y"] = 0,
@@ -3445,7 +3455,7 @@ elseif text == "Auto Exit Duel" then
 			sound:GetPropertyChangedSignal("Playing"):Connect(function()
 
 				if sound.Playing then
-					Players.LocalPlayer:Kick("ORRXL4 HUB ON TOP")
+					Players.LocalPlayer:Kick("Xero Apex hub")
 				end
 
 			end)
