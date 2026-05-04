@@ -82,26 +82,34 @@ task.spawn(function()
 end)
 
 task.spawn(function()
--- VALIDACIÓN DE EJECUCIÓN ÚNICA
-if _G.AutoMedusaLoaded then 
-    return 
-end
-_G.AutoMedusaLoaded = true
-
-
-task.spawn(function()
--- VALIDACIÓN DE EJECUCIÓN ÚNICA
-if _G.StealCustomizerLoaded then 
-    return 
-end
-_G.StealCustomizerLoaded = true
-
 -- AUTO MEDUSA ULTIMATE (LÓGICA ORIGINAL CORREGIDA + ENEMY TRACKER)
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui") -- Agregado para la limpieza
 local LP = Players.LocalPlayer
+
+-- === LIMPIEZA PARA EVITAR DUPLICADOS ===
+if CoreGui:FindFirstChild("MedusaProUI") then 
+    CoreGui:FindFirstChild("MedusaProUI"):Destroy() 
+end
+
+-- ===================== CONFIGURACIÓN Y CONSTANTES =====================
+local MEDUSA_COOLDOWN = 25
+local MedusaConfig = {
+-- AUTO MEDUSA ULTIMATE (LÓGICA ORIGINAL CORREGIDA + ENEMY TRACKER)
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LP = Players.LocalPlayer
+
+-- === LIMPIEZA PARA EVITAR DUPLICADOS ===
+if CoreGui:FindFirstChild("MedusaProUI") then 
+    CoreGui:FindFirstChild("MedusaProUI"):Destroy() 
+end
 
 -- ===================== CONFIGURACIÓN Y CONSTANTES =====================
 local MEDUSA_COOLDOWN = 25
@@ -220,7 +228,116 @@ end
 
 -- ===================== INTERFAZ BLACK PRO =====================
 local function createUI()
-    local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    local sg = Instance.new("ScreenGui", CoreGui)
+    sg.Name = "MedusaProUI"
+    local mf = Instance.new("Frame", sg); mf.Name = "MainFrame"
+    mf.Size = UDim2.new(0, 200, 0, 35); mf.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
+    mf.Position = loadedData.Pos and UDim2.new(loadedData.Pos.X, loadedData.Pos.XO, loadedData.Pos.Y, loadedData.Pos.YO) or UDim2.new(0.5, -100, 0.6, 0)
+    mf.Active = true; mf.Draggable = true; Instance.new("UICorner", mf); Instance.new("UIStroke", mf).Color = Color3.fromRGB(50, 150, 250)
+
+    local CollapseBtn = Instance.new("TextButton", mf)
+    CollapseBtn.Size = UDim2.new(0, 30, 0, 30); CollapseBtn.Position = UDim2.new(1, -35, 0, 2); CollapseBtn.Text = "v"; CollapseBtn.TextColor3 = Color3.new(1, 1, 1); CollapseBtn.BackgroundTransparency = 1; CollapseBtn.TextSize = 20; CollapseBtn.Font = Enum.Font.GothamBold
+
+    local Title = Instance.new("TextLabel", mf)
+    Title.Size = UDim2.new(1, -45, 0, 30); Title.Position = UDim2.new(0, 10, 0, 2); Title.Text = "Auto Medusa Pro"; Title.TextColor3 = Color3.fromRGB(80, 180, 255); Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.Font = Enum.Font.GothamBold
+
+    local toggle = Instance.new("TextButton", mf)
+    toggle.Size = UDim2.new(1, -20, 0, 25); toggle.Position = UDim2.new(0, 10, 0, 40)
+    toggle.BackgroundColor3 = MedusaConfig.Enabled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+    toggle.Text = MedusaConfig.Enabled and "ACTIVADO" or "DESACTIVADO"; toggle.TextColor3 = Color3.new(1, 1, 1); toggle.Font = Enum.Font.GothamBold; toggle.Visible = false; Instance.new("UICorner", toggle)
+
+    local barBack = Instance.new("Frame", mf); barBack.Size = UDim2.new(1, -20, 0, 5); barBack.Position = UDim2.new(0, 10, 0, 75); barBack.BackgroundColor3 = Color3.fromRGB(30, 30, 35); barBack.Visible = false; Instance.new("UICorner", barBack)
+    local barFill = Instance.new("Frame", barBack); barFill.Size = UDim2.new(0, 0, 1, 0); barFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255); Instance.new("UICorner", barFill)
+
+    local open = false
+    CollapseBtn.MouseButton1Click:Connect(function()
+        open = not open; toggle.Visible = open; barBack.Visible = open
+        mf.Size = open and UDim2.new(0, 200, 0, 95) or UDim2.new(0, 200, 0, 35)
+        CollapseBtn.Text = open and "^" or "v"
+    end)
+
+    toggle.MouseButton1Click:Connect(function()
+        MedusaConfig.Enabled = not MedusaConfig.Enabled
+        toggle.Text = MedusaConfig.Enabled and "ACTIVADO" or "DESACTIVADO"
+        toggle.BackgroundColor3 = MedusaConfig.Enabled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+        if MedusaConfig.Enabled then setupMedusaLogic(LP.Character) end
+        SaveConfig()
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        local myDiff = tick() - MedusaConfig.LastUsed
+        barFill.Size = UDim2.new(math.clamp(myDiff / MEDUSA_COOLDOWN, 0, 1), 0, 1, 0)
+        
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LP and p.Character and p.Character:FindFirstChild("Head") then
+                local tag = p.Character.Head:FindFirstChild("MedusaTrackerTag")
+                if tag then
+                    local label = tag.TextLabel
+                    local tool = findMedusa(p)
+                    
+                    -- LÓGICA DE DETECCIÓN POR ACTIVACIÓN
+                    if tool and tool.Parent == p.Character then 
+                        tool.Activated:Connect(function()
+                            if not MedusaConfig.Opponents[p.Name] or (tick() - MedusaConfig.Opponents[p.Name]) >= MEDUSA_COOLDOWN then
+                                MedusaConfig.Opponents[p.Name] = tick()
+                            end
+                        end)
+                    end
+                    
+                    local enemyLast = MedusaConfig.Opponents[p.Name]
+                    if enemyLast then
+                        local remaining = MEDUSA_COOLDOWN - (tick() - enemyLast)
+                        if remaining > 0 then
+                            label.TextColor3 = Color3.fromRGB(170, 0, 255)
+                            label.Text = string.format("%.1f", remaining):gsub("%.", ",")
+                        else
+                            label.TextColor3 = Color3.fromRGB(0, 170, 0)
+                            label.Text = "MEDUSA LISTA"
+                        end
+                    else
+                        label.TextColor3 = Color3.fromRGB(0, 170, 0)
+                        label.Text = "MEDUSA LISTA"
+                    end
+                else createOpponentTag(p) end
+            end
+        end
+    end)
+    mf:GetPropertyChangedSignal("Position"):Connect(SaveConfig); MedusaConfig.UI = {MainFrame = mf}
+end
+
+-- ===================== CARGA INICIAL =====================
+LP.CharacterAdded:Connect(function(char)
+    setupMedusaLogic(char)
+end)
+
+if LP.Character then setupMedusaLogic(LP.Character) end
+
+createUI()
+for _, p in ipairs(Players:GetPlayers()) do if p ~= LP then createOpponentTag(p) end end
+
+-- ===================== TRACKER DE OPONENTES =====================
+local function createOpponentTag(player)
+    local char = player.Character or player.CharacterAdded:Wait()
+    local head = char:WaitForChild("Head", 10)
+    if not head then return end
+    
+    local old = head:FindFirstChild("MedusaTrackerTag")
+    if old then old:Destroy() end
+
+    local bg = Instance.new("BillboardGui", head)
+    bg.Name = "MedusaTrackerTag"; bg.Size = UDim2.new(0, 200, 0, 50); bg.StudsOffset = Vector3.new(0, 4, 0); bg.AlwaysOnTop = true
+
+    local lbl = Instance.new("TextLabel", bg)
+    lbl.Size = UDim2.new(1, 0, 1, 0); lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 35; lbl.TextColor3 = Color3.fromRGB(170, 0, 255)
+    lbl.TextStrokeTransparency = 0; lbl.Text = ""
+    return lbl
+end
+
+-- ===================== INTERFAZ BLACK PRO =====================
+local function createUI()
+    local sg = Instance.new("ScreenGui", CoreGui)
+    sg.Name = "MedusaProUI" -- Nombre para poder borrarlo al reiniciar
     local mf = Instance.new("Frame", sg); mf.Name = "MainFrame"
     mf.Size = UDim2.new(0, 200, 0, 35); mf.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
     mf.Position = loadedData.Pos and UDim2.new(loadedData.Pos.X, loadedData.Pos.XO, loadedData.Pos.Y, loadedData.Pos.YO) or UDim2.new(0.5, -100, 0.6, 0)
@@ -304,188 +421,4 @@ if LP.Character then setupMedusaLogic(LP.Character) end
 
 createUI()
 for _, p in ipairs(Players:GetPlayers()) do if p ~= LP then createOpponentTag(p) end end
-end)
-
--- STEAL CUSTOMIZER (PRO - PRESETS FIXED)
-
-local HttpService = game:GetService("HttpService")
-local SpeedCustomizer = {
-    Enabled = false,
-    SpeedUI = nil,
-    StealValue = 30,
-    P1 = 15,
-    P2 = 25,
-    P3 = 30,
-    HeartbeatConn = nil,
-    character = nil,
-    hrp = nil,
-    hum = nil,
-    FileName = "Kawatan_StealPresets.json"
-}
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
-
--- GUARDADO EN DISCO
-local function SaveConfigToDisk()
-    local data = {
-        Enabled = SpeedCustomizer.Enabled,
-        Steal = SpeedCustomizer.StealValue,
-        P1 = SpeedCustomizer.P1,
-        P2 = SpeedCustomizer.P2,
-        P3 = SpeedCustomizer.P3,
-        Pos = {
-            X = SpeedCustomizer.SpeedUI.SpeedMainFrame.Position.X.Scale,
-            XO = SpeedCustomizer.SpeedUI.SpeedMainFrame.Position.X.Offset,
-            Y = SpeedCustomizer.SpeedUI.SpeedMainFrame.Position.Y.Scale,
-            YO = SpeedCustomizer.SpeedUI.SpeedMainFrame.Position.Y.Offset
-        }
-    }
-    if writefile then writefile(SpeedCustomizer.FileName, HttpService:JSONEncode(data)) end
-end
-
-local loadedData = {}
-if isfile and isfile(SpeedCustomizer.FileName) then
-    pcall(function() loadedData = HttpService:JSONDecode(readfile(SpeedCustomizer.FileName)) end)
-end
-
-SpeedCustomizer.Enabled = loadedData.Enabled or false
-SpeedCustomizer.StealValue = loadedData.Steal or 30
-SpeedCustomizer.P1 = loadedData.P1 or 15
-SpeedCustomizer.P2 = loadedData.P2 or 25
-SpeedCustomizer.P3 = loadedData.P3 or 30
-
-local function setupChar(char)
-    SpeedCustomizer.character = char
-    SpeedCustomizer.hrp = char:WaitForChild("HumanoidRootPart")
-    SpeedCustomizer.hum = char:WaitForChild("Humanoid")
-end
-
-local function createUI()
-    local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    sg.Name = "Kawatan_SpeedUI"
-
-    local mf = Instance.new("Frame", sg)
-    mf.Name = "SpeedMainFrame"
-    mf.Size = UDim2.new(0, 200, 0, 35) -- Cerrado por defecto
-    mf.Position = loadedData.Pos and UDim2.new(loadedData.Pos.X, loadedData.Pos.XO, loadedData.Pos.Y, loadedData.Pos.YO) or UDim2.new(0.5, -100, 0.4, 0)
-    mf.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
-    mf.Active = true
-    mf.Draggable = true
-    Instance.new("UICorner", mf)
-    Instance.new("UIStroke", mf).Color = Color3.fromRGB(50, 150, 250)
-
-    local CollapseBtn = Instance.new("TextButton", mf)
-    CollapseBtn.Size = UDim2.new(0, 30, 0, 30); CollapseBtn.Position = UDim2.new(1, -35, 0, 2)
-    CollapseBtn.Text = "v"; CollapseBtn.TextColor3 = Color3.new(1, 1, 1); CollapseBtn.BackgroundTransparency = 1; CollapseBtn.TextSize = 20; CollapseBtn.Font = Enum.Font.GothamBold
-
-    local Title = Instance.new("TextLabel", mf)
-    Title.Size = UDim2.new(1, -45, 0, 30); Title.Position = UDim2.new(0, 10, 0, 2)
-    Title.Text = "Steal Customizer"; Title.TextColor3 = Color3.fromRGB(80, 180, 255); Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.Font = Enum.Font.GothamBold
-
-    local toggle = Instance.new("TextButton", mf)
-    toggle.Size = UDim2.new(1, -20, 0, 25); toggle.Position = UDim2.new(0, 10, 0, 40)
-    toggle.BackgroundColor3 = SpeedCustomizer.Enabled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
-    toggle.Text = SpeedCustomizer.Enabled and "ACTIVADO" or "DESACTIVADO"
-    toggle.TextColor3 = Color3.new(1, 1, 1); toggle.Font = Enum.Font.GothamBold; toggle.Visible = false; Instance.new("UICorner", toggle)
-
-    local tInp = Instance.new("TextBox", mf)
-    tInp.Size = UDim2.new(0, 65, 0, 20); tInp.Position = UDim2.new(1, -75, 0, 75)
-    tInp.BackgroundColor3 = Color3.fromRGB(25, 25, 30); tInp.Text = tostring(SpeedCustomizer.StealValue); tInp.TextColor3 = Color3.new(1, 1, 1); tInp.Font = Enum.Font.GothamBold; tInp.ClearTextOnFocus = false; tInp.Visible = false; Instance.new("UICorner", tInp)
-
-    local lab = Instance.new("TextLabel", mf)
-    lab.Size = UDim2.new(0.5, 0, 0, 20); lab.Position = UDim2.new(0, 10, 0, 75); lab.Text = "Steal Speed"; lab.TextColor3 = Color3.fromRGB(200, 200, 200); lab.BackgroundTransparency = 1; lab.Visible = false; lab.TextXAlignment = Enum.TextXAlignment.Left
-
-    -- BOTONES DE ABAJO (PRESETS)
-    local presetFrame = Instance.new("Frame", mf)
-    presetFrame.Size = UDim2.new(1, 0, 0, 30); presetFrame.Position = UDim2.new(0, 0, 1, 5); presetFrame.BackgroundTransparency = 1
-
-    local function createPresetBtn(val, xPos, key)
-        local btn = Instance.new("TextButton", presetFrame)
-        btn.Size = UDim2.new(0.3, 0, 1, 0); btn.Position = UDim2.new(xPos, 0, 0, 0)
-        btn.BackgroundColor3 = Color3.fromRGB(25, 25, 30); btn.Text = tostring(val); btn.TextColor3 = Color3.new(1, 1, 1); btn.Font = Enum.Font.GothamBold
-        Instance.new("UICorner", btn); Instance.new("UIStroke", btn).Color = Color3.fromRGB(50, 150, 250)
-        
-        btn.MouseButton1Click:Connect(function()
-            -- CAMBIO DE VELOCIDAD DIRECTO
-            SpeedCustomizer.StealValue = SpeedCustomizer[key]
-            tInp.Text = tostring(SpeedCustomizer.StealValue)
-            SaveConfigToDisk()
-        end)
-        return btn
-    end
-
-    local p1Btn = createPresetBtn(SpeedCustomizer.P1, 0, "P1")
-    local p2Btn = createPresetBtn(SpeedCustomizer.P2, 0.35, "P2")
-    local p3Btn = createPresetBtn(SpeedCustomizer.P3, 0.7, "P3")
-
-    -- INPUTS PARA EDITAR (DENTRO DEL CUADRO)
-    local function createEditBox(txt, key, y, btnRef)
-        local box = Instance.new("TextBox", mf)
-        box.Size = UDim2.new(0, 65, 0, 20); box.Position = UDim2.new(1, -75, 0, y)
-        box.BackgroundColor3 = Color3.fromRGB(20, 20, 25); box.Text = tostring(SpeedCustomizer[key])
-        box.TextColor3 = Color3.new(1, 1, 1); box.Font = Enum.Font.GothamBold; box.ClearTextOnFocus = false; box.Visible = false; Instance.new("UICorner", box)
-        
-        local label = Instance.new("TextLabel", mf)
-        label.Size = UDim2.new(0.5, 0, 0, 20); label.Position = UDim2.new(0, 10, 0, y)
-        label.Text = txt; label.TextColor3 = Color3.fromRGB(150, 150, 150); label.BackgroundTransparency = 1; label.Visible = false; label.TextXAlignment = Enum.TextXAlignment.Left
-
-        box.FocusLost:Connect(function()
-            local n = math.clamp(tonumber(box.Text) or SpeedCustomizer[key], 1, 55)
-            SpeedCustomizer[key] = n
-            box.Text = tostring(n)
-            btnRef.Text = tostring(n)
-            SaveConfigToDisk()
-        end)
-        return box, label
-    end
-
-    local e1, l1 = createEditBox("Set Preset 1", "P1", 105, p1Btn)
-    local e2, l2 = createEditBox("Set Preset 2", "P2", 130, p2Btn)
-    local e3, l3 = createEditBox("Set Preset 3", "P3", 155, p3Btn)
-
-    local open = false
-    CollapseBtn.MouseButton1Click:Connect(function()
-        open = not open
-        toggle.Visible = open; tInp.Visible = open; lab.Visible = open
-        e1.Visible = open; l1.Visible = open; e2.Visible = open; l2.Visible = open; e3.Visible = open; l3.Visible = open
-        mf.Size = open and UDim2.new(0, 200, 0, 185) or UDim2.new(0, 200, 0, 35)
-        CollapseBtn.Text = open and "^" or "v"
-    end)
-
-    tInp.FocusLost:Connect(function() 
-        SpeedCustomizer.StealValue = math.clamp(tonumber(tInp.Text) or SpeedCustomizer.StealValue, 5, 55)
-        tInp.Text = tostring(SpeedCustomizer.StealValue)
-        SaveConfigToDisk()
-    end)
-
-    toggle.MouseButton1Click:Connect(function()
-        SpeedCustomizer.Enabled = not SpeedCustomizer.Enabled
-        toggle.Text = SpeedCustomizer.Enabled and "ACTIVADO" or "DESACTIVADO"
-        toggle.BackgroundColor3 = SpeedCustomizer.Enabled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
-        SaveConfigToDisk()
-    end)
-
-    mf:GetPropertyChangedSignal("Position"):Connect(SaveConfigToDisk)
-    SpeedCustomizer.SpeedUI = sg
-end
-
-local function enable()
-    if not SpeedCustomizer.SpeedUI then createUI() end
-    if lp.Character then setupChar(lp.Character) end
-    lp.CharacterAdded:Connect(setupChar)
-
-    RunService.Heartbeat:Connect(function()
-        if not SpeedCustomizer.Enabled or not SpeedCustomizer.hrp or not SpeedCustomizer.hum then return end
-        local moveDir = SpeedCustomizer.hum.MoveDirection
-        if moveDir.Magnitude > 0 and SpeedCustomizer.hum.WalkSpeed > 0.1 then
-            if SpeedCustomizer.hum.WalkSpeed < 34 then
-                SpeedCustomizer.hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * SpeedCustomizer.StealValue, SpeedCustomizer.hrp.AssemblyLinearVelocity.Y, moveDir.Z * SpeedCustomizer.StealValue)
-            end
-        end
-    end)
-end
-
-enable()
 end)
