@@ -88,6 +88,14 @@ if _G.AutoMedusaLoaded then
 end
 _G.AutoMedusaLoaded = true
 
+
+task.spawn(function()
+-- VALIDACIÓN DE EJECUCIÓN ÚNICA
+if _G.StealCustomizerLoaded then 
+    return 
+end
+_G.StealCustomizerLoaded = true
+
 -- AUTO MEDUSA ULTIMATE (LÓGICA ORIGINAL CORREGIDA + ENEMY TRACKER)
 
 local HttpService = game:GetService("HttpService")
@@ -297,13 +305,6 @@ if LP.Character then setupMedusaLogic(LP.Character) end
 createUI()
 for _, p in ipairs(Players:GetPlayers()) do if p ~= LP then createOpponentTag(p) end end
 end)
-
-task.spawn(function()
--- VALIDACIÓN DE EJECUCIÓN ÚNICA
-if _G.StealCustomizerLoaded then 
-    return 
-end
-_G.StealCustomizerLoaded = true
 
 -- STEAL CUSTOMIZER (PRO - PRESETS FIXED)
 
