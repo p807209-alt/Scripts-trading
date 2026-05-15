@@ -6,7 +6,7 @@ task.spawn(function()
     local Players = game:GetService("Players")
 
     local NOMBRE_NUEVO = "Grok hub"
-    local DISCORD_TUYO = "discord.gg/GfbPeZrzhN"
+    local DISCORD_TUYO = "REVUL PREMIUM"
 
     local COLORS = {
         PurpleStart = Color3.fromRGB(120, 0, 255),
